@@ -85,6 +85,8 @@ task runIchorCNA {
   }
 
   command <<<
+    mkdir ~{outputFileNamePrefix}_ichorCNA
+
     runIchorCNA \
     --id ~{outputFileNamePrefix} \
     --WIG ~{bamWig} \
@@ -105,6 +107,8 @@ task runIchorCNA {
     --txnE 0.9999 \
     --txnStrength 10000 \
     --outDir ~{outputFileNamePrefix}_ichorCNA
+
+    tar -zcvf ~{outputFileNamePrefix}_ichorCNA.tar.gz ~{outputFileNamePrefix}_ichorCNA
   >>>
 
   runtime {
@@ -113,6 +117,6 @@ task runIchorCNA {
   }
 
   output {
-    File ichorResults = "~{outputFileNamePrefix}_ichorCNA"
+    File ichorResults = "~{outputFileNamePrefix}_ichorCNA.tar.gz"
   }
 }
