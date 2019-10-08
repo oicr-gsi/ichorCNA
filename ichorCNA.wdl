@@ -1,87 +1,75 @@
 version 1.0
+
 workflow ichorCNA {
 
   input {
-
-    String? modules = "ichorcna/0.2 hmmcopy-utils"
-    File input_bam
-    File input_bam_index
-    String sampleName
+    File bam
+    File bamIndex
+    String? outputFileNamePrefix
     Boolean includeHOMD
     Int maxCNstates
     Int window
     Int qual
-    Int mem
-    String chromosome_wig
+    String chromosomeWig
   }
 
-call runReadCounter{
-  input:
-    input_bam=input_bam,
-    input_bam_index=input_bam_index,
-    sampleName=sampleName,
-    window=window,
-    qual=qual,
-    modules=modules,
-    mem=mem,
-    chromosome_wig=chromosome_wig
+  call runReadCounter{
+    input:
+      bam=bam,
+      bamIndex=bamIndex,
+      outputFileNamePrefix=outputFileNamePrefix,
+      window=window,
+      qual=qual,
+      chromosomeWig=chromosomeWig
  }
 
-call runIchorCNA {
-input:
-  includeHOMD=includeHOMD,
-  maxCNstates=maxCNstates,
-  sampleName=sampleName,
-  modules=modules,
-  mem=mem,
-  bamWig=runReadCounter.bamWig
-
- }
-}
-
-
-task copyOverBam {
-  input {
-    File input_bam
-    File input_bam_index
+  call runIchorCNA {
+    input:
+      includeHOMD=includeHOMD,
+      maxCNstates=maxCNstates,
+      outputFileNamePrefix=outputFileNamePrefix,
+      bamWig=runReadCounter.bamWig
   }
-  command <<<
-  ls -l $(dirname ~{input_bam})
-  ls -l $(dirname ~{input_bam_index})
-  >>>
 }
 
 # First step : read counter
 task runReadCounter {
   input{
-    File input_bam
-    File input_bam_index
-    String sampleName
+    File bam
+    File bamIndex
+    String? outputFileNamePrefix = "output"
     Int window
     Int qual
-    Int mem
-    String? modules
-    String chromosome_wig
+    Int? mem = 8
+    String? modules = "hmmcopy-utils/0.1.1"
+    String chromosomeWig
   }
-  runtime {
-        memory: "~{mem} GB"
-        modules: "~{modules}"
-    }
 
-  command {
+  command <<<
     set -o pipefail
+
+    # index
     readCounter \
-      --window ~{window} \
-      --quality ~{qual} \
-      --chromosome "~{chromosome_wig}" \
-      -b ~{input_bam}
-    $HMMCOPY_UTILS_ROOT/bin/readCounter --window ~{window} \
-        --quality ~{qual} \
-        --chromosome ~{chromosome_wig} \
-        ~{input_bam} | sed "s/chrom=chr/chrom=/" > ~{sampleName}.wig
-    }
+    --window ~{window} \
+    --quality ~{qual} \
+    --chromosome ~{chromosomeWig} \
+    --build ~{bam}
+
+    # convert
+    readCounter \
+    --window ~{window} \
+    --quality ~{qual} \
+    --chromosome ~{chromosomeWig} \
+    ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+  >>>
+
+  runtime {
+    memory: "~{mem} GB"
+    modules: "~{modules}"
+  }
+
   output {
-    File bamWig = "${sampleName}.wig"
+    File bamWig = "~{outputFileNamePrefix}.wig"
   }
 }
 
@@ -89,22 +77,16 @@ task runReadCounter {
 task runIchorCNA {
   input{
     File bamWig
-    String sampleName
+    String? outputFileNamePrefix = "output"
     Boolean includeHOMD
     Int maxCNstates
-    String? modules
-    Int mem
+    String? modules = "ichorcna/0.2"
+    Int? mem = 8
   }
 
-  runtime {
-        memory: "~{mem} GB"
-        modules: "~{modules}"
-    }
-
-command {
-
-  runIchorCNA \
-    --id ~{sampleName} \
+  command <<<
+    runIchorCNA \
+    --id ~{outputFileNamePrefix} \
     --WIG ~{bamWig} \
     --ploidy "c(2,3)" \
     --normal "c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)" \
@@ -122,9 +104,15 @@ command {
     --scStates "c(1, 3)" \
     --txnE 0.9999 \
     --txnStrength 10000 \
-    --outDir ~{sampleName}_ichorCNA
-    }
-output {
-  File ichorResults = "~{sampleName}_ichorCNA"
+    --outDir ~{outputFileNamePrefix}_ichorCNA
+  >>>
+
+  runtime {
+    memory: "~{mem} GB"
+    modules: "~{modules}"
+  }
+
+  output {
+    File ichorResults = "~{outputFileNamePrefix}_ichorCNA"
   }
 }
