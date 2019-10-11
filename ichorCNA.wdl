@@ -30,6 +30,16 @@ workflow ichorCNA {
       outputFileNamePrefix=outputFileNamePrefix,
       bamWig=runReadCounter.bamWig
   }
+
+  output {
+    File segments = runIchorCNA.segments
+    File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
+    File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
+    File convergedParameters = runIchorCNA.convergedParameters
+    File correctedDepth = runIchorCNA.correctedDepth
+    File rData = runIchorCNA.rData
+    File plots = runIchorCNA.plots
+  }
 }
 
 # First step : read counter
@@ -106,9 +116,9 @@ task runIchorCNA {
     --scStates "c(1, 3)" \
     --txnE 0.9999 \
     --txnStrength 10000 \
-    --outDir ~{outputFileNamePrefix}_ichorCNA
+    --outDir ./
 
-    tar -zcvf ~{outputFileNamePrefix}_ichorCNA.tar.gz ~{outputFileNamePrefix}_ichorCNA
+    tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
   >>>
 
   runtime {
@@ -117,6 +127,12 @@ task runIchorCNA {
   }
 
   output {
-    File ichorResults = "~{outputFileNamePrefix}_ichorCNA.tar.gz"
+    File segments = "~{outputFileNamePrefix}.seg"
+    File segmentsWithSubclonalStatus = "~{outputFileNamePrefix}.seg.txt"
+    File estimatedCopyNumber = "~{outputFileNamePrefix}.cna.seg"
+    File convergedParameters = "~{outputFileNamePrefix}.params.txt"
+    File correctedDepth = "~{outputFileNamePrefix}.correctedDepth.txt"
+    File rData = "~{outputFileNamePrefix}.RData"
+    File plots = "~{outputFileNamePrefix}_plots.tar.gz"
   }
 }
