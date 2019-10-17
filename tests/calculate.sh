@@ -10,7 +10,7 @@ ls -1
 find . \( -iname "*.seg" -o -iname "*.seg.txt" -o -iname "*.correctedDepth.txt" -o -iname "*params.txt" \) -exec wc -l {} \;
 
 # check size of RData binary file
-du -h *.RData
+find . -iname "*.RData" -size +0 -printf '%p found and non-zero file size\n'
 
 # calculate what report files are archived
 tar --list --file *_plots.tar.gz
