@@ -6,11 +6,9 @@ workflow ichorCNA {
     File bam
     File bamIndex
     String? outputFileNamePrefix
-    Boolean includeHOMD
-    Int maxCNstates
-    Int window
-    Int qual
-    String chromosomeWig
+    Int windowSize
+    Int minimumMappingQuality
+    String chromosomesToAnalyze
   }
 
   call runReadCounter{
@@ -18,17 +16,15 @@ workflow ichorCNA {
       bam=bam,
       bamIndex=bamIndex,
       outputFileNamePrefix=outputFileNamePrefix,
-      window=window,
-      qual=qual,
-      chromosomeWig=chromosomeWig
+      windowSize=windowSize,
+      minimumMappingQuality=minimumMappingQuality,
+      chromosomesToAnalyze=chromosomesToAnalyze
  }
 
   call runIchorCNA {
     input:
-      includeHOMD=includeHOMD,
-      maxCNstates=maxCNstates,
       outputFileNamePrefix=outputFileNamePrefix,
-      bamWig=runReadCounter.bamWig
+      wig=runReadCounter.wig
   }
 
   output {
@@ -48,11 +44,11 @@ task runReadCounter {
     File bam
     File bamIndex
     String? outputFileNamePrefix = "output"
-    Int window
-    Int qual
+    Int windowSize
+    Int minimumMappingQuality
+    String chromosomesToAnalyze
     Int? mem = 8
     String? modules = "hmmcopy-utils/0.1.1"
-    String chromosomeWig
   }
 
   command <<<
@@ -60,16 +56,16 @@ task runReadCounter {
 
     # index
     readCounter \
-    --window ~{window} \
-    --quality ~{qual} \
-    --chromosome ~{chromosomeWig} \
+    --window ~{windowSize} \
+    --quality ~{minimumMappingQuality} \
+    --chromosome ~{chromosomesToAnalyze} \
     --build ~{bam}
 
     # convert
     readCounter \
-    --window ~{window} \
-    --quality ~{qual} \
-    --chromosome ~{chromosomeWig} \
+    --window ~{windowSize} \
+    --quality ~{minimumMappingQuality} \
+    --chromosome ~{chromosomesToAnalyze} \
     ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
   >>>
 
@@ -79,17 +75,52 @@ task runReadCounter {
   }
 
   output {
-    File bamWig = "~{outputFileNamePrefix}.wig"
+    File wig = "~{outputFileNamePrefix}.wig"
   }
 }
 
 # second step : run ichorCNA
 task runIchorCNA {
   input{
-    File bamWig
+    File wig
+    File? normalWig
+    String gcWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"
+    String? mapWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"
+    String? normalPanel = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds"
+    String? exonsBed
+    String? centromere = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
+    Float? minMapScore
+    Int? rmCentromereFlankLength
+    String normal = "c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)"
+    String? scStates = "c(1, 3)"
+    String? coverage
+    String? lambda
+    Int? lambdaScaleHyperParam
+    String? ploidy = "c(2,3)"
+    Int? maxCN = 5
+    Boolean? estimateNormal = true
+    Boolean? estimateScPrevalence = true
+    Boolean? estimatePloidy = true
+    Float? maxFracCNASubclone
+    Float? maxFracGenomeSubclone
+    String? minSegmentBins
+    Float? altFracThreshold
+    String? chrNormalize
+    String? chrTrain = "c(1:22)"
+    String? chrs = "c(1:22, 'X')"
+    String? genomeBuild
+    String? genomeStyle
+    Boolean? normalizeMaleX
+    Float? fracReadsInChrYForMale
+    Boolean? includeHOMD = true
+    Float? txnE = 0.9999
+    Int? txnStrength = 10000
+    String? plotFileType
+    String? plotYLim
+    String? outDir = "./"
+    String? libdir
+
     String? outputFileNamePrefix = "output"
-    Boolean includeHOMD
-    Int maxCNstates
     String? modules = "ichorcna/0.2"
     Int? mem = 8
   }
@@ -98,26 +129,46 @@ task runIchorCNA {
     mkdir ~{outputFileNamePrefix}_ichorCNA
 
     runIchorCNA \
+    --WIG ~{wig} \
+    ~{"--NORMWIG " + normalWig} \
+    --gcWig ~{gcWig} \
+    ~{"--mapWig " + mapWig} \
+    ~{"--normalPanel " + normalPanel} \
+    ~{"--exons.bed " + exonsBed} \
     --id ~{outputFileNamePrefix} \
-    --WIG ~{bamWig} \
-    --ploidy "c(2,3)" \
-    --normal "c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)" \
-    --maxCN 5 \
-    --gcWig $ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig \
-    --mapWig $ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig \
-    --centromere $ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt \
-    --normalPanel $ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds \
-    --includeHOMD ~{true="True" false="False" includeHOMD} \
-    --chrs "c(1:22, 'X')" \
-    --chrTrain "c(1:22)" \
-    --estimateNormal True \
-    --estimatePloidy True \
-    --estimateScPrevalence True \
-    --scStates "c(1, 3)" \
-    --txnE 0.9999 \
-    --txnStrength 10000 \
-    --outDir ./
+    ~{"--centromere " + centromere} \
+    ~{"--minMapScore " + minMapScore} \
+    ~{"--rmCentromereFlankLength " + rmCentromereFlankLength} \
+    ~{"--normal " + normal} \
+    ~{"--scStates " + scStates} \
+    ~{"--coverage " + coverage} \
+    ~{"--lambda " + lambda} \
+    ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
+    ~{"--ploidy " + ploidy} \
+    ~{"--maxCN " + maxCN} \
+    ~{"--estimateNormal " + if estimateNormal then "True" else "False"} \
+    ~{"--estimateScPrevalence " + if estimateScPrevalence then "True" else "False"} \
+    ~{"--estimatePloidy " + if estimatePloidy then "True" else "False"} \
+    ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
+    ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
+    ~{"--minSegmentBins " + minSegmentBins} \
+    ~{"--altFracThreshold " + altFracThreshold} \
+    ~{"--chrNormalize " + chrNormalize} \
+    ~{"--chrTrain " + chrTrain} \
+    ~{"--chrs " + chrs} \
+    ~{"--genomeBuild " + genomeBuild} \
+    ~{"--genomeStyle " + genomeStyle} \
+    ~{"--normalizeMaleX " + if normalizeMaleX then "True" else "False"} \
+    ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
+    ~{"--includeHOMD " + if includeHOMD then "True" else "False"} \
+    ~{"--txnE " + txnE} \
+    ~{"--txnStrength " + txnStrength} \
+    ~{"--plotFileType " + plotFileType} \
+    ~{"--plotYLim " + plotYLim} \
+    --outDir + ~{outDir} \
+    ~{"--libdir " + libdir}
 
+    # compress directory of plots
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
   >>>
 
