@@ -126,8 +126,6 @@ task runIchorCNA {
   }
 
   command <<<
-    mkdir ~{outputFileNamePrefix}_ichorCNA
-
     runIchorCNA \
     --WIG ~{wig} \
     ~{"--NORMWIG " + normalWig} \
