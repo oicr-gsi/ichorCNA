@@ -146,9 +146,9 @@ task runIchorCNA {
     ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
     ~{"--ploidy " + ploidy} \
     ~{"--maxCN " + maxCN} \
-    ~{"--estimateNormal " + if estimateNormal then "True" else "False"} \
-    ~{"--estimateScPrevalence " + if estimateScPrevalence then "True" else "False"} \
-    ~{"--estimatePloidy " + if estimatePloidy then "True" else "False"} \
+    ~{true="--estimateNormal True" false="--estimateNormal False" estimateNormal} \
+    ~{true="--estimateScPrevalence True" false="--estimateScPrevalence  False" estimateScPrevalence} \
+    ~{true="--estimatePloidy True" false="--estimatePloidy False" estimatePloidy} \
     ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
     ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
     ~{"--minSegmentBins " + minSegmentBins} \
@@ -158,9 +158,9 @@ task runIchorCNA {
     ~{"--chrs " + chrs} \
     ~{"--genomeBuild " + genomeBuild} \
     ~{"--genomeStyle " + genomeStyle} \
-    ~{"--normalizeMaleX " + if normalizeMaleX then "True" else "False"} \
+    ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
     ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
-    ~{"--includeHOMD " + if includeHOMD then "True" else "False"} \
+    ~{true="--includeHOMD True" false="--includeHOMD False" includeHOMD} \
     ~{"--txnE " + txnE} \
     ~{"--txnStrength " + txnStrength} \
     ~{"--plotFileType " + plotFileType} \
