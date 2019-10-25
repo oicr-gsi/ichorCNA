@@ -163,8 +163,8 @@ task runIchorCNA {
     ~{"--txnStrength " + txnStrength} \
     ~{"--plotFileType " + plotFileType} \
     ~{"--plotYLim " + plotYLim} \
-    --outDir + ~{outDir} \
-    ~{"--libdir " + libdir}
+    ~{"--libdir " + libdir} \
+    --outDir ~{outDir}
 
     # compress directory of plots
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
