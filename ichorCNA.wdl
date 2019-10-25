@@ -91,12 +91,12 @@ task runIchorCNA {
     String? centromere = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
     Float? minMapScore
     Int? rmCentromereFlankLength
-    String normal = "c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)"
-    String? scStates = "c(1, 3)"
+    String normal = "\"c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)\""
+    String? scStates = "\"c(1, 3)\""
     String? coverage
     String? lambda
     Int? lambdaScaleHyperParam
-    String? ploidy = "c(2,3)"
+    String? ploidy = "\"c(2,3)\""
     Int? maxCN = 5
     Boolean? estimateNormal = true
     Boolean? estimateScPrevalence = true
@@ -106,8 +106,8 @@ task runIchorCNA {
     String? minSegmentBins
     Float? altFracThreshold
     String? chrNormalize
-    String? chrTrain = "c(1:22)"
-    String? chrs = "c(1:22, 'X')"
+    String? chrTrain = "\"c(1:22)\""
+    String? chrs = "\"c(1:22, 'X')\""
     String? genomeBuild
     String? genomeStyle
     Boolean? normalizeMaleX
