@@ -40,6 +40,7 @@ Parameter|Value|Default|Description
 ---|---|---|---
 `runReadCounter.mem`|Int?|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String?|"hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
+`runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
 `runIchorCNA.gcWig`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"|GC-content WIG file.
 `runIchorCNA.mapWig`|String?|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"|Mappability score WIG file. Default: [NULL].
@@ -78,6 +79,7 @@ Parameter|Value|Default|Description
 `runIchorCNA.libdir`|String?|None|Script library path.
 `runIchorCNA.modules`|String?|"ichorcna/0.2"|Environment module name and version to load (space separated) before command execution.
 `runIchorCNA.mem`|Int?|8|Memory (in GB) to allocate to the job.
+`runIchorCNA.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 
 
 ### Outputs

@@ -74,6 +74,7 @@ task runReadCounter {
     String chromosomesToAnalyze
     Int? mem = 8
     String? modules = "hmmcopy-utils/0.1.1"
+    Int timeout = 12
   }
 
   command <<<
@@ -97,6 +98,7 @@ task runReadCounter {
   runtime {
     memory: "~{mem} GB"
     modules: "~{modules}"
+    timeout: "~{timeout}"
   }
 
   output {
@@ -112,6 +114,7 @@ task runReadCounter {
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     mem: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
@@ -164,6 +167,7 @@ task runIchorCNA {
 
     String? modules = "ichorcna/0.2"
     Int? mem = 8
+    Int timeout = 12
   }
 
   command <<<
@@ -214,6 +218,7 @@ task runIchorCNA {
   runtime {
     memory: "~{mem} GB"
     modules: "~{modules}"
+    timeout: "~{timeout}"
   }
 
   output {
@@ -267,6 +272,7 @@ task runIchorCNA {
     libdir: "Script library path."
     modules: "Environment module name and version to load (space separated) before command execution."
     mem: "Memory (in GB) to allocate to the job."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
