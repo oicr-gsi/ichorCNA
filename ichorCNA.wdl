@@ -72,8 +72,9 @@ task runReadCounter {
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
-    Int? mem = 8
-    String? modules = "hmmcopy-utils/0.1.1"
+    Int mem = 8
+    String modules = "hmmcopy-utils/0.1.1"
+    Int timeout = 12
   }
 
   command <<<
@@ -97,6 +98,7 @@ task runReadCounter {
   runtime {
     memory: "~{mem} GB"
     modules: "~{modules}"
+    timeout: "~{timeout}"
   }
 
   output {
@@ -112,6 +114,7 @@ task runReadCounter {
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     mem: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
@@ -127,43 +130,44 @@ task runIchorCNA {
     File wig
     File? normalWig
     String gcWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"
-    String? mapWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"
-    String? normalPanel = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds"
+    String mapWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"
+    String normalPanel = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds"
     String? exonsBed
-    String? centromere = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
+    String centromere = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
     Float? minMapScore
     Int? rmCentromereFlankLength
     String normal = "\"c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)\""
-    String? scStates = "\"c(1, 3)\""
+    String scStates = "\"c(1, 3)\""
     String? coverage
     String? lambda
     Int? lambdaScaleHyperParam
-    String? ploidy = "\"c(2,3)\""
-    Int? maxCN = 5
-    Boolean? estimateNormal = true
-    Boolean? estimateScPrevalence = true
-    Boolean? estimatePloidy = true
+    String ploidy = "\"c(2,3)\""
+    Int maxCN = 5
+    Boolean estimateNormal = true
+    Boolean estimateScPrevalence = true
+    Boolean estimatePloidy = true
     Float? maxFracCNASubclone
     Float? maxFracGenomeSubclone
     String? minSegmentBins
     Float? altFracThreshold
     String? chrNormalize
-    String? chrTrain = "\"c(1:22)\""
-    String? chrs = "\"c(1:22, 'X')\""
+    String chrTrain = "\"c(1:22)\""
+    String chrs = "\"c(1:22, 'X')\""
     String? genomeBuild
     String? genomeStyle
     Boolean? normalizeMaleX
     Float? fracReadsInChrYForMale
-    Boolean? includeHOMD = true
-    Float? txnE = 0.9999
-    Int? txnStrength = 10000
+    Boolean includeHOMD = true
+    Float txnE = 0.9999
+    Int txnStrength = 10000
     String? plotFileType
     String? plotYLim
-    String? outDir = "./"
+    String outDir = "./"
     String? libdir
 
-    String? modules = "ichorcna/0.2"
-    Int? mem = 8
+    String modules = "ichorcna/0.2"
+    Int mem = 8
+    Int timeout = 12
   }
 
   command <<<
@@ -214,6 +218,7 @@ task runIchorCNA {
   runtime {
     memory: "~{mem} GB"
     modules: "~{modules}"
+    timeout: "~{timeout}"
   }
 
   output {
@@ -267,6 +272,7 @@ task runIchorCNA {
     libdir: "Script library path."
     modules: "Environment module name and version to load (space separated) before command execution."
     mem: "Memory (in GB) to allocate to the job."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
