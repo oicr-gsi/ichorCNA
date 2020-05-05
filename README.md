@@ -6,6 +6,7 @@ Workflow for estimating the fraction of tumor in cell-free DNA from sWGS
 
 ## Dependencies
 
+* [samtools 1.9](http://www.htslib.org/)
 * [hmmcopy-utils 0.1.1](https://github.com/broadinstitute/ichorCNA)
 * [ichorcna 0.2](https://shahlab.ca/projects/hmmcopy_utils/)
 
@@ -39,7 +40,7 @@ Parameter|Value|Default|Description
 Parameter|Value|Default|Description
 ---|---|---|---
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
-`runReadCounter.modules`|String|"hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
+`runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
 `runIchorCNA.gcWig`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"|GC-content WIG file.

@@ -52,6 +52,10 @@ workflow ichorCNA {
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS"
     dependencies: [
       {
+        name: "samtools/1.9",
+        url: "http://www.htslib.org/"
+      },
+      {
         name: "hmmcopy-utils/0.1.1",
         url: "https://github.com/broadinstitute/ichorCNA"
       },
@@ -73,7 +77,7 @@ task runReadCounter {
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Int mem = 8
-    String modules = "hmmcopy-utils/0.1.1"
+    String modules = "samtools/1.9 hmmcopy-utils/0.1.1"
     Int timeout = 12
   }
 
