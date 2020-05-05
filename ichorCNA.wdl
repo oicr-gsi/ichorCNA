@@ -24,6 +24,7 @@ workflow ichorCNA {
   call runIchorCNA {
     input:
       outputFileNamePrefix=outputFileNamePrefix,
+      chrs=runReadCounter.chromosomesWithReads,
       wig=runReadCounter.wig
   }
 
@@ -85,20 +86,23 @@ task runReadCounter {
     set -euo pipefail
 
     # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_TO_ANALYZE_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort | uniq | paste -s -d, -)
+    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort | uniq | paste -s -d, -)
+
+    # write out a chromosomes with reads for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' > chromosomesWithReads.txt
 
     # index
     readCounter \
     --window ~{windowSize} \
     --quality ~{minimumMappingQuality} \
-    --chromosome "${CHROMOSOMES_TO_ANALYZE_WITH_READS}" \
+    --chromosome "${CHROMOSOMES_WITH_READS}" \
     --build ~{bam}
 
     # convert
     readCounter \
     --window ~{windowSize} \
     --quality ~{minimumMappingQuality} \
-    --chromosome "${CHROMOSOMES_TO_ANALYZE_WITH_READS}" \
+    --chromosome "${CHROMOSOMES_WITH_READS}" \
     ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
   >>>
 
@@ -110,6 +114,7 @@ task runReadCounter {
 
   output {
     File wig = "~{outputFileNamePrefix}.wig"
+    Array[String] chromosomesWithReads = read_lines("chromosomesWithReads.txt")
   }
 
   parameter_meta {
@@ -126,7 +131,8 @@ task runReadCounter {
 
   meta {
     output_meta: {
-      wig: "Read count file in WIG format"
+      wig: "Read count file in WIG format",
+      chromosomesWithReads: "Chromosomes with reads  (\"chr\" stripped from the name)"
     }
   }
 }
@@ -159,7 +165,7 @@ task runIchorCNA {
     Float? altFracThreshold
     String? chrNormalize
     String chrTrain = "\"c(1:22)\""
-    String chrs = "\"c(1:22, 'X')\""
+    Array[String] chrs
     String? genomeBuild
     String? genomeStyle
     Boolean? normalizeMaleX
@@ -205,7 +211,7 @@ task runIchorCNA {
     ~{"--altFracThreshold " + altFracThreshold} \
     ~{"--chrNormalize " + chrNormalize} \
     ~{"--chrTrain " + chrTrain} \
-    ~{"--chrs " + chrs} \
+    --chrs "c(~{sep="," chrs})" \
     ~{"--genomeBuild " + genomeBuild} \
     ~{"--genomeStyle " + genomeStyle} \
     ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
