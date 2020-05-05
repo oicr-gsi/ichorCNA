@@ -78,20 +78,23 @@ task runReadCounter {
   }
 
   command <<<
-    set -o pipefail
+    set -euo pipefail
+
+    # calculate chromosomes to analyze (with reads) from input data
+    CHROMOSOMES_TO_ANALYZE_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort | uniq | paste -s -d, -)
 
     # index
     readCounter \
     --window ~{windowSize} \
     --quality ~{minimumMappingQuality} \
-    --chromosome ~{chromosomesToAnalyze} \
+    --chromosome "${CHROMOSOMES_TO_ANALYZE_WITH_READS}" \
     --build ~{bam}
 
     # convert
     readCounter \
     --window ~{windowSize} \
     --quality ~{minimumMappingQuality} \
-    --chromosome ~{chromosomesToAnalyze} \
+    --chromosome "${CHROMOSOMES_TO_ANALYZE_WITH_READS}" \
     ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
   >>>
 
