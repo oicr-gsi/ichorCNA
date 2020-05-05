@@ -83,10 +83,10 @@ task runReadCounter {
   }
 
   command <<<
-    set -euo pipefail
+    set -euxo pipefail
 
     # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort | uniq | paste -s -d, -)
+    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
     echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' > chromosomesWithReads.txt
