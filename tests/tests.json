@@ -17,7 +17,7 @@
       "parameters": {
         "wdl_inputs": {
           "ichorCNA.bam": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned.bam",
-          "ichorCNA.bamIndex": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned.bai",
+          "ichorCNA.bamIndex": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned.bam.bai",
           "ichorCNA.outputFileNamePrefix": "Chro8-002-T",
           "ichorCNA.windowSize": "1000000",
           "ichorCNA.minimumMappingQuality": "20",
