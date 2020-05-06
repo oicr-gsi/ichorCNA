@@ -91,13 +91,6 @@ task runReadCounter {
     # write out a chromosomes with reads for ichorCNA
     echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' > chromosomesWithReads.txt
 
-    # index
-    readCounter \
-    --window ~{windowSize} \
-    --quality ~{minimumMappingQuality} \
-    --chromosome "${CHROMOSOMES_WITH_READS}" \
-    --build ~{bam}
-
     # convert
     readCounter \
     --window ~{windowSize} \
