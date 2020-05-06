@@ -89,7 +89,8 @@ task runReadCounter {
     CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
-    echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' > chromosomesWithReads.txt
+    # remove chr prefix, split onto new lines (for wdl read_lines), wrap in single quotes for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' | sed -e "s/\(.*\)/'\1'/" > chromosomesWithReads.txt
 
     # convert
     readCounter \
