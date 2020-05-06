@@ -24,7 +24,7 @@ workflow ichorCNA {
   call runIchorCNA {
     input:
       outputFileNamePrefix=outputFileNamePrefix,
-      chrs=runReadCounter.chromosomesWithReads,
+      chrs=runReadCounter.ichorCNAchrs,
       wig=runReadCounter.wig
   }
 
@@ -89,8 +89,8 @@ task runReadCounter {
     CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
-    # remove chr prefix, split onto new lines (for wdl read_lines), wrap in single quotes for ichorCNA
-    echo "${CHROMOSOMES_WITH_READS}" | sed "s/chr//g" | tr ',' '\n' | sed -e "s/\(.*\)/'\1'/" > chromosomesWithReads.txt
+    # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
 
     # convert
     readCounter \
@@ -108,7 +108,7 @@ task runReadCounter {
 
   output {
     File wig = "~{outputFileNamePrefix}.wig"
-    Array[String] chromosomesWithReads = read_lines("chromosomesWithReads.txt")
+    Array[String] ichorCNAchrs = read_lines("ichorCNAchrs.txt")
   }
 
   parameter_meta {
@@ -126,7 +126,7 @@ task runReadCounter {
   meta {
     output_meta: {
       wig: "Read count file in WIG format",
-      chromosomesWithReads: "Chromosomes with reads  (\"chr\" stripped from the name)"
+      ichorCNAchrs: "Chromosomes with reads for ichorCNA (\"chr\" stripped from the name)"
     }
   }
 }
