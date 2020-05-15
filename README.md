@@ -6,6 +6,7 @@ Workflow for estimating the fraction of tumor in cell-free DNA from sWGS
 
 ## Dependencies
 
+* [samtools 1.9](http://www.htslib.org/)
 * [hmmcopy-utils 0.1.1](https://github.com/broadinstitute/ichorCNA)
 * [ichorcna 0.2](https://shahlab.ca/projects/hmmcopy_utils/)
 
@@ -39,7 +40,7 @@ Parameter|Value|Default|Description
 Parameter|Value|Default|Description
 ---|---|---|---
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
-`runReadCounter.modules`|String|"hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
+`runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
 `runIchorCNA.gcWig`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"|GC-content WIG file.
@@ -65,7 +66,6 @@ Parameter|Value|Default|Description
 `runIchorCNA.altFracThreshold`|Float?|None|Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [0.05].
 `runIchorCNA.chrNormalize`|String?|None|Specify chromosomes to normalize GC/mappability biases. Default: [c(1:22)].
 `runIchorCNA.chrTrain`|String|"\"c(1:22)\""|Specify chromosomes to estimate params. Default: [c(1:22)].
-`runIchorCNA.chrs`|String|"\"c(1:22, 'X')\""|Specify chromosomes to analyze.
 `runIchorCNA.genomeBuild`|String?|None|Genome build. Default: [hg19].
 `runIchorCNA.genomeStyle`|String?|None|NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have "chr" string. [Default: NCBI].
 `runIchorCNA.normalizeMaleX`|Boolean?|None|If male, then normalize chrX by median. Default: [TRUE].
@@ -123,4 +123,4 @@ mvn clean verify \
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 
-_Generated with wdl_doc_gen (https://github.com/oicr-gsi/wdl_doc_gen/)_
+_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_

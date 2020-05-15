@@ -24,6 +24,7 @@ workflow ichorCNA {
   call runIchorCNA {
     input:
       outputFileNamePrefix=outputFileNamePrefix,
+      chrs=runReadCounter.ichorCNAchrs,
       wig=runReadCounter.wig
   }
 
@@ -52,6 +53,10 @@ workflow ichorCNA {
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS"
     dependencies: [
       {
+        name: "samtools/1.9",
+        url: "http://www.htslib.org/"
+      },
+      {
         name: "hmmcopy-utils/0.1.1",
         url: "https://github.com/broadinstitute/ichorCNA"
       },
@@ -73,25 +78,25 @@ task runReadCounter {
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Int mem = 8
-    String modules = "hmmcopy-utils/0.1.1"
+    String modules = "samtools/1.9 hmmcopy-utils/0.1.1"
     Int timeout = 12
   }
 
   command <<<
-    set -o pipefail
+    set -euxo pipefail
 
-    # index
-    readCounter \
-    --window ~{windowSize} \
-    --quality ~{minimumMappingQuality} \
-    --chromosome ~{chromosomesToAnalyze} \
-    --build ~{bam}
+    # calculate chromosomes to analyze (with reads) from input data
+    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+
+    # write out a chromosomes with reads for ichorCNA
+    # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
 
     # convert
     readCounter \
     --window ~{windowSize} \
     --quality ~{minimumMappingQuality} \
-    --chromosome ~{chromosomesToAnalyze} \
+    --chromosome "${CHROMOSOMES_WITH_READS}" \
     ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
   >>>
 
@@ -103,6 +108,7 @@ task runReadCounter {
 
   output {
     File wig = "~{outputFileNamePrefix}.wig"
+    Array[String] ichorCNAchrs = read_lines("ichorCNAchrs.txt")
   }
 
   parameter_meta {
@@ -119,7 +125,8 @@ task runReadCounter {
 
   meta {
     output_meta: {
-      wig: "Read count file in WIG format"
+      wig: "Read count file in WIG format",
+      ichorCNAchrs: "Chromosomes with reads for ichorCNA (\"chr\" stripped from the name)"
     }
   }
 }
@@ -152,7 +159,7 @@ task runIchorCNA {
     Float? altFracThreshold
     String? chrNormalize
     String chrTrain = "\"c(1:22)\""
-    String chrs = "\"c(1:22, 'X')\""
+    Array[String] chrs
     String? genomeBuild
     String? genomeStyle
     Boolean? normalizeMaleX
@@ -198,7 +205,7 @@ task runIchorCNA {
     ~{"--altFracThreshold " + altFracThreshold} \
     ~{"--chrNormalize " + chrNormalize} \
     ~{"--chrTrain " + chrTrain} \
-    ~{"--chrs " + chrs} \
+    --chrs "c(~{sep="," chrs})" \
     ~{"--genomeBuild " + genomeBuild} \
     ~{"--genomeStyle " + genomeStyle} \
     ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
