@@ -57,11 +57,11 @@ workflow ichorCNA {
         url: "http://www.htslib.org/"
       },
       {
-        name: "hmmcopy-utils/0.1.1",
+        name: "ichorcna/0.2",
         url: "https://github.com/broadinstitute/ichorCNA"
       },
       {
-        name: "ichorcna/0.2",
+        name: "hmmcopy-utils/0.1.1",
         url: "https://shahlab.ca/projects/hmmcopy_utils/"
       }
     ]
@@ -86,7 +86,7 @@ task runReadCounter {
     set -euxo pipefail
 
     # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep {chromosomesToAnalyze} | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
     # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
