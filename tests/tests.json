@@ -15,9 +15,17 @@
     {
       "id": "Chro8-002",
       "parameters": {
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0/lib/imports.zip",
         "wdl_inputs": {
-          "ichorCNA.bam": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned.bam",
-          "ichorCNA.bamIndex": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned.bam.bai",
+          "ichorCNA.inputGroups": [
+            {
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r2.fastq.gz"
+            }
+          ],
+          "ichorCNA.bwaMem.readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'",
+          "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa",
           "ichorCNA.outputFileNamePrefix": "Chro8-002-T",
           "ichorCNA.windowSize": "1000000",
           "ichorCNA.minimumMappingQuality": "20",
@@ -32,9 +40,17 @@
     {
       "id": "MATS_0002",
       "parameters": {
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0/lib/imports.zip",
         "wdl_inputs": {
-          "ichorCNA.bam": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated.bam",
-          "ichorCNA.bamIndex": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated.bam.bai",
+          "ichorCNA.inputGroups": [
+            {
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r2.fastq.gz"
+            }
+          ],
+          "ichorCNA.bwaMem.readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'",
+          "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa",
           "ichorCNA.outputFileNamePrefix": "MATS_0002",
           "ichorCNA.windowSize": "1000000",
           "ichorCNA.minimumMappingQuality": "20",

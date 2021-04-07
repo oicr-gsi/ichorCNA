@@ -1,6 +1,6 @@
 version 1.0
 
-import "imports/pull_bwaMem.wdl" as bwaMem
+import "imports/pull_bwa.wdl" as bwaMem
 
 struct InputGroup {
     File fastqR1
@@ -11,36 +11,36 @@ workflow ichorCNA {
 
   input {
     Array[InputGroup]? inputGroups
-    String outputFileNamePrefix = basename(bam, '.bam')
+    String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
   }
 
   Array[InputGroup] inputs = select_first([inputGroups])
-  scatter (id in inputs) {
+  scatter (ig in inputs) {
     File read1s = ig.fastqR1
     File read2s = ig.fastqR2
   }
 
   call concat {
     input:
-      read1s = select_first([read1s]),
-      read2s = select_first([read2s]),
+      read1s = read1s,
+      read2s = read2s,
       outputFileNamePrefix = outputFileNamePrefix
   }
 
   call bwaMem.bwaMem {
     input:
-      fastqR1 = select_first([concat.fastqR1]),
-      fastqR2 = select_first([concat.fastqR2]),
+      fastqR1 = concat.fastqR1,
+      fastqR2 = concat.fastqR1,
       outputFileNamePrefix = outputFileNamePrefix
   }
 
   call runReadCounter{
     input:
       bam=bwaMem.bwaMemBam,
-      bamIndex=bwaMem.bamIndex,
+      bamIndex=bwaMem.bwaMemIndex,
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
