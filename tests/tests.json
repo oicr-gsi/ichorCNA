@@ -19,8 +19,8 @@
         "wdl_inputs": {
           "ichorCNA.inputGroups": [
             {
-              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15409584_TGL49_0032_Cf_U_PE_381_TS_LFS_4042_87782-1_191126_NB551056_0130_AHTMW5BGXC_CGTGTGTA-CCAACGAA_L001_R1_001.fastq.gz",
-              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15409584_TGL49_0032_Cf_U_PE_381_TS_LFS_4042_87782-1_191126_NB551056_0130_AHTMW5BGXC_CGTGTGTA-CCAACGAA_L001_R2_001.fastq.gz"
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r2.fastq.gz"
             }
           ],
           "ichorCNA.bwaMem.readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'",
@@ -36,6 +36,33 @@
           "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
         }
       }
+    },
+    {
+      "id": "MATS_0002",
+      "parameters": {
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0.2/lib/imports.zip",
+        "wdl_inputs": {
+          "ichorCNA.inputGroups": [
+            {
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r2.fastq.gz"
+            }
+          ],
+          "ichorCNA.bwaMem.readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'",
+          "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa",
+          "ichorCNA.outputFileNamePrefix": "MATS_0002",
+          "ichorCNA.windowSize": "1000000",
+          "ichorCNA.minimumMappingQuality": "20",
+          "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+          "ichorCNA.runIchorCNA.gcWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg38_1000kb.wig",
+          "ichorCNA.runIchorCNA.mapWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg38_1000kb.wig",
+          "ichorCNA.runIchorCNA.normalPanel": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+          "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
+        }
+      }
     }
   ]
 }
+
+
