@@ -15,7 +15,7 @@
     {
       "id": "Chro8-002",
       "parameters": {
-        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0/lib/imports.zip",
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0.2/lib/imports.zip",
         "wdl_inputs": {
           "ichorCNA.inputGroups": [
             {
@@ -40,7 +40,7 @@
     {
       "id": "MATS_0002",
       "parameters": {
-        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0/lib/imports.zip",
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0.2/lib/imports.zip",
         "wdl_inputs": {
           "ichorCNA.inputGroups": [
             {
