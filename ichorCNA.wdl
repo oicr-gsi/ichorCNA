@@ -3,8 +3,8 @@ version 1.0
 import "imports/pull_bwa.wdl" as bwaMem
 
 struct InputGroup {
-    File fastqR1
-    File fastqR2
+  File fastqR1
+  File fastqR2
 }
 
 workflow ichorCNA {
@@ -40,7 +40,6 @@ workflow ichorCNA {
   call runReadCounter{
     input:
       bam=bwaMem.bwaMemBam,
-      bamIndex=bwaMem.bwaMemIndex,
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -141,7 +140,6 @@ task concat {
 task runReadCounter {
   input{
     File bam
-    File bamIndex
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -153,6 +151,8 @@ task runReadCounter {
 
   command <<<
     set -euxo pipefail
+
+    samtools index ~{bam}
 
     # calculate chromosomes to analyze (with reads) from input data
     CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
@@ -182,7 +182,6 @@ task runReadCounter {
 
   parameter_meta {
     bam: "Input bam."
-    bamIndex: "Input bam index (must be .bam.bai)."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
