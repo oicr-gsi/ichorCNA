@@ -44,8 +44,8 @@
         "wdl_inputs": {
           "ichorCNA.inputGroups": [
             {
-              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r1.fastq.gz",
-              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r2.fastq.gz"
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r2.fastq.gz"
             }
           ],
           "ichorCNA.bwaMem.readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'",
