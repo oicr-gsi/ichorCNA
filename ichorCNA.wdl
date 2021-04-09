@@ -1,20 +1,45 @@
 version 1.0
 
+import "imports/pull_bwa.wdl" as bwaMem
+
+struct InputGroup {
+  File fastqR1
+  File fastqR2
+}
+
 workflow ichorCNA {
 
   input {
-    File bam
-    File bamIndex
-    String outputFileNamePrefix = basename(bam, '.bam')
+    Array[InputGroup]? inputGroups
+    String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
   }
 
+  Array[InputGroup] inputs = select_first([inputGroups])
+  scatter (ig in inputs) {
+    File read1s = ig.fastqR1
+    File read2s = ig.fastqR2
+  }
+
+  call concat {
+    input:
+      read1s = read1s,
+      read2s = read2s,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
+  call bwaMem.bwaMem {
+    input:
+      fastqR1 = concat.fastqR1,
+      fastqR2 = concat.fastqR1,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
   call runReadCounter{
     input:
-      bam=bam,
-      bamIndex=bamIndex,
+      bam=bwaMem.bwaMemBam,
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -39,8 +64,7 @@ workflow ichorCNA {
   }
 
   parameter_meta {
-    bam: "Input bam."
-    bamIndex: "Input bam index (must be .bam.bai)."
+    inputGroups: "Array of fastq files to concatenate."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
@@ -69,10 +93,53 @@ workflow ichorCNA {
 
 }
 
+task concat {
+  input {
+    Array[File]+ read1s
+    Array[File]+ read2s
+    String outputFileNamePrefix
+    Int threads = 4
+    Int jobMemory = 16
+    Int timeout = 72
+    String modules = "tabix/0.2.6"
+  }
+
+  parameter_meta {
+    read1s: "array of read1s"
+    read2s: "array of read2s"
+    outputFileNamePrefix: "File name prefix"
+    threads: "Number of threads to request"
+    jobMemory: "Memory allocated for this job"
+    timeout: "Hours before task timeout"
+    modules: "Required environment modules"
+  }
+
+  command <<<
+    set -euo pipefail
+
+    zcat ~{sep=" " read1s} | gzip > ~{outputFileNamePrefix}_R1_001.fastq.gz
+
+    zcat ~{sep=" " read2s} | gzip > ~{outputFileNamePrefix}_R2_001.fastq.gz
+
+  >>>
+
+  runtime {
+    memory:  "~{jobMemory} GB"
+    cpu:     "~{threads}"
+    timeout: "~{timeout}"
+    modules: "~{modules}"
+
+  }
+
+  output {
+    File fastqR1 = "~{outputFileNamePrefix}_R1_001.fastq.gz"
+    File fastqR2 = "~{outputFileNamePrefix}_R2_001.fastq.gz"
+  }
+}
+
 task runReadCounter {
   input{
     File bam
-    File bamIndex
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -84,6 +151,8 @@ task runReadCounter {
 
   command <<<
     set -euxo pipefail
+
+    samtools index ~{bam}
 
     # calculate chromosomes to analyze (with reads) from input data
     CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
@@ -113,7 +182,6 @@ task runReadCounter {
 
   parameter_meta {
     bam: "Input bam."
-    bamIndex: "Input bam index (must be .bam.bai)."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."

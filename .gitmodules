@@ -1,0 +1,3 @@
+[submodule "subworkflows/bwa"]
+	path = subworkflows/bwa
+	url = git@github.com:oicr-gsi/bwa.git
