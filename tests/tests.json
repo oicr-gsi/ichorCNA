@@ -50,7 +50,7 @@
           ],
           "ichorCNA.bwaMem.readGroups": "'@RG\\tID:121005_h804_0096_AD0V4NACXX-NoIndex_6\\tLB:PCSI0022C\\tPL:ILLUMINA\\tPU:121005_h804_0096_AD0V4NACXX-NoIndex_6\\tSM:PCSI0022C'",
           "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg38-bwa-index/0.7.12",
-          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG38_BWA_INDEX_ROOT//hg38_random.fa"
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG38_BWA_INDEX_ROOT//hg38_random.fa",
           "ichorCNA.outputFileNamePrefix": "MATS_0002",
           "ichorCNA.windowSize": "1000000",
           "ichorCNA.minimumMappingQuality": "20",
