@@ -1,0 +1,7 @@
+{
+    "names": [
+        "ichorcna_call_ready",
+        "ichorcna_lane_level"
+    ],
+    "wdl": "ichorCNA.wdl"
+}
