@@ -33,7 +33,7 @@ workflow ichorCNA {
   call bwaMem.bwaMem {
     input:
       fastqR1 = concat.fastqR1,
-      fastqR2 = concat.fastqR1,
+      fastqR2 = concat.fastqR2,
       outputFileNamePrefix = outputFileNamePrefix
   }
 
