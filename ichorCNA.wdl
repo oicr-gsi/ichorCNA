@@ -101,7 +101,6 @@ task concat {
     Int threads = 4
     Int jobMemory = 16
     Int timeout = 72
-    String modules = "tabix/0.2.6"
   }
 
   parameter_meta {
@@ -111,7 +110,6 @@ task concat {
     threads: "Number of threads to request"
     jobMemory: "Memory allocated for this job"
     timeout: "Hours before task timeout"
-    modules: "Required environment modules"
   }
 
   command <<<
@@ -127,7 +125,6 @@ task concat {
     memory:  "~{jobMemory} GB"
     cpu:     "~{threads}"
     timeout: "~{timeout}"
-    modules: "~{modules}"
 
   }
 
