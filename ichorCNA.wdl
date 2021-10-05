@@ -115,9 +115,9 @@ task concat {
   command <<<
     set -euo pipefail
 
-    zcat ~{sep=" " read1s} | gzip > ~{outputFileNamePrefix}_R1_001.fastq.gz
+    zcat ~{sep=" " read1s} | gzip > ~{outputFileNamePrefix}_R1.fastq.gz
 
-    zcat ~{sep=" " read2s} | gzip > ~{outputFileNamePrefix}_R2_001.fastq.gz
+    zcat ~{sep=" " read2s} | gzip > ~{outputFileNamePrefix}_R2.fastq.gz
 
   >>>
 
@@ -129,8 +129,8 @@ task concat {
   }
 
   output {
-    File fastqR1 = "~{outputFileNamePrefix}_R1_001.fastq.gz"
-    File fastqR2 = "~{outputFileNamePrefix}_R2_001.fastq.gz"
+    File fastqR1 = "~{outputFileNamePrefix}_R1.fastq.gz"
+    File fastqR2 = "~{outputFileNamePrefix}_R2.fastq.gz"
   }
 }
 
