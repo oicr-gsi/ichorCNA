@@ -5,6 +5,7 @@ import "imports/pull_bwa.wdl" as bwaMem
 struct InputGroup {
   File fastqR1
   File fastqR2
+  String readGroups
 }
 
 workflow ichorCNA {
@@ -22,6 +23,7 @@ workflow ichorCNA {
       input:
         fastqR1 = ig.fastqR1,
         fastqR2 = ig.fastqR2,
+        readGroups = ig.readGroups
     }
   }
 
