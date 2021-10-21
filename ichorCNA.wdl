@@ -10,36 +10,30 @@ struct InputGroup {
 workflow ichorCNA {
 
   input {
-    Array[InputGroup]? inputGroups
+    Array[InputGroup] inputGroups
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
   }
 
-  Array[InputGroup] inputs = select_first([inputGroups])
-  scatter (ig in inputs) {
-    File read1s = ig.fastqR1
-    File read2s = ig.fastqR2
+  scatter (ig in inputGroups) {
+    call bwaMem.bwaMem {
+      input:
+        fastqR1 = ig.fastqR1,
+        fastqR2 = ig.fastqR2,
+    }
   }
 
-  call concat {
+  call bamMerge {
     input:
-      read1s = read1s,
-      read2s = read2s,
-      outputFileNamePrefix = outputFileNamePrefix
-  }
-
-  call bwaMem.bwaMem {
-    input:
-      fastqR1 = concat.fastqR1,
-      fastqR2 = concat.fastqR2,
+      bams = bwaMem.bwaMemBam, #check
       outputFileNamePrefix = outputFileNamePrefix
   }
 
   call runReadCounter{
     input:
-      bam=bwaMem.bwaMemBam,
+      bam=bamMerge.outputMergedBam,
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -93,45 +87,48 @@ workflow ichorCNA {
 
 }
 
-task concat {
-  input {
-    Array[File]+ read1s
-    Array[File]+ read2s
-    String outputFileNamePrefix
-    Int threads = 4
-    Int jobMemory = 16
-    Int timeout = 72
-  }
+#copy from bwaMem
+task bamMerge{
+    input {
+        Array[File] bams
+        String outputFileNamePrefix
+        Int   jobMemory = 32
+        String modules  = "samtools/1.9"
+        Int timeout     = 72
+    }
+    parameter_meta {
+        bams:  "Input bam files"
+        outputFileNamePrefix: "Prefix for output file"
+        jobMemory: "Memory allocated indexing job"
+        modules:   "Required environment modules"
+        timeout:   "Hours before task timeout"
+    }
 
-  parameter_meta {
-    read1s: "array of read1s"
-    read2s: "array of read2s"
-    outputFileNamePrefix: "File name prefix"
-    threads: "Number of threads to request"
-    jobMemory: "Memory allocated for this job"
-    timeout: "Hours before task timeout"
-  }
+    String resultMergedBam = "~{outputFileNamePrefix}.bam"
 
-  command <<<
-    set -euo pipefail
+    command <<<
+        set -euo pipefail
+        samtools merge \
+        -c \
+        ~{resultMergedBam} \
+        ~{sep=" " bams}
+    >>>
 
-    zcat ~{sep=" " read1s} | gzip > ~{outputFileNamePrefix}_R1.fastq.gz
+    runtime {
+        memory: "~{jobMemory} GB"
+        modules: "~{modules}"
+        timeout: "~{timeout}"
+    }
 
-    zcat ~{sep=" " read2s} | gzip > ~{outputFileNamePrefix}_R2.fastq.gz
+    output {
+        File outputMergedBam = "~{resultMergedBam}"
+    }
 
-  >>>
-
-  runtime {
-    memory:  "~{jobMemory} GB"
-    cpu:     "~{threads}"
-    timeout: "~{timeout}"
-
-  }
-
-  output {
-    File fastqR1 = "~{outputFileNamePrefix}_R1.fastq.gz"
-    File fastqR2 = "~{outputFileNamePrefix}_R2.fastq.gz"
-  }
+    meta {
+        output_meta: {
+            outputMergedBam: "output merged bam aligned to genome"
+        }
+    }
 }
 
 task runReadCounter {
