@@ -50,8 +50,38 @@
             }
           ],
           "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg38-bwa-index/0.7.12",
-          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG38_BWA_INDEX_ROOT//hg38_random.fa",
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG38_BWA_INDEX_ROOT/hg38_random.fa",
           "ichorCNA.outputFileNamePrefix": "MATS_0002",
+          "ichorCNA.windowSize": "1000000",
+          "ichorCNA.minimumMappingQuality": "20",
+          "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+          "ichorCNA.runIchorCNA.gcWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg38_1000kb.wig",
+          "ichorCNA.runIchorCNA.mapWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg38_1000kb.wig",
+          "ichorCNA.runIchorCNA.normalPanel": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+          "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
+        }
+      }
+    },
+    {
+      "id": "TGL49",
+      "parameters": {
+        "wdl_deps_zip": "${workflow_bundle_dir}/Workflow_Bundle_ichorCNA/1.0.2/lib/imports.zip",
+        "wdl_inputs": {
+          "ichorCNA.inputGroups": [
+            {
+              "fastqR1": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0111_Cf_U_PE_330_WG_200729_NB551051_0169_AHCFWKBGXF_1_ATCACACG-GTAGCGTA_R1.fastq.gz",
+              "fastqR2": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0111_Cf_U_PE_330_WG_200729_NB551051_0169_AHCFWKBGXF_1_ATCACACG-GTAGCGTA_R2.fastq.gz",
+              "readGroups": "'@RG\\tID:200729_NB551051_0169_AHCFWKBGXF-ATCACACG-GTAGCGTA_1\\tLB:TGL49_0111_Cf_U_PE_330_WG\\tPL:ILLUMINA\\tPU:200729_NB551051_0169_AHCFWKBGXF-ATCACACG-GTAGCGTA_1\\tSM:TGL49_0111_Cf_U_LFS_5956'"
+            },
+            {
+              "fastqR1": "/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/bcl2fastq_3.1.2/22441811/TGL49_0111_Cf_U_PE_330_WG_210614_NB551051_0224_AH57NFBGXJ_1_ATCACACG-GTAGCGTA_R1.fastq.gz",
+              "fastqR2": "/oicr/data/archive/seqware/seqware_analysis_12/hsqwprod/seqware-results/bcl2fastq_3.1.2/22441811/TGL49_0111_Cf_U_PE_330_WG_210614_NB551051_0224_AH57NFBGXJ_1_ATCACACG-GTAGCGTA_R2.fastq.gz",
+              "readGroups": "'@RG\\tID:210614_NB551051_0224_AH57NFBGXJ-ATCACACG-GTAGCGTA_1\\tLB:TGL49_0111_Cf_U_PE_330_WG\\tPL:ILLUMINA\\tPU:210614_NB551051_0224_AH57NFBGXJ-ATCACACG-GTAGCGTA_1\\tSM:TGL49_0111_Cf_U_LFS_5956'"
+            }
+          ],
+          "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG38_BWA_INDEX_ROOT/hg38_random.fa",
+          "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg38-bwa-index/0.7.12",
+          "ichorCNA.outputFileNamePrefix": "TGL49_0111_Cf_U_PE_330_WG",
           "ichorCNA.windowSize": "1000000",
           "ichorCNA.minimumMappingQuality": "20",
           "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
