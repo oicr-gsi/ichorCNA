@@ -58,6 +58,7 @@
           "ichorCNA.runIchorCNA.gcWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg38_1000kb.wig",
           "ichorCNA.runIchorCNA.mapWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg38_1000kb.wig",
           "ichorCNA.runIchorCNA.normalPanel": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+          "ichorCNA.runIchorCNA.genomeBuild": "hg38",
           "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
         }
       }
@@ -88,6 +89,7 @@
           "ichorCNA.runIchorCNA.gcWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg38_1000kb.wig",
           "ichorCNA.runIchorCNA.mapWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg38_1000kb.wig",
           "ichorCNA.runIchorCNA.normalPanel": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+          "ichorCNA.runIchorCNA.genomeBuild": "hg38",
           "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
         }
       }
