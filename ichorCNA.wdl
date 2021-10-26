@@ -9,7 +9,6 @@ struct InputGroup {
 }
 
 workflow ichorCNA {
-
   input {
     Array[InputGroup] inputGroups
     String outputFileNamePrefix
@@ -27,15 +26,17 @@ workflow ichorCNA {
     }
   }
 
-  call bamMerge {
-    input:
-      bams = bwaMem.bwaMemBam, #check
-      outputFileNamePrefix = outputFileNamePrefix
+  if (length(inputGroups) > 1) {
+    call bamMerge {
+      input:
+        bams = bwaMem.bwaMemBam, #check
+        outputFileNamePrefix = outputFileNamePrefix
+    }
   }
 
   call runReadCounter{
     input:
-      bam=bamMerge.outputMergedBam,
+      bam=select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -50,6 +51,7 @@ workflow ichorCNA {
   }
 
   output {
+    File? bam = bamMerge.outputMergedBam
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -60,7 +62,7 @@ workflow ichorCNA {
   }
 
   parameter_meta {
-    inputGroups: "Array of fastq files to concatenate."
+    inputGroups: "Array of fastq files and their read groups."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
