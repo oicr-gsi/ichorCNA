@@ -23,22 +23,57 @@ java -jar cromwell.jar run ichorCNA.wdl --inputs inputs.json
 #### Required workflow parameters:
 Parameter|Value|Description
 ---|---|---
-`bam`|File|Input bam.
-`bamIndex`|File|Input bam index (must be .bam.bai).
+`inputGroups`|Array[InputGroup]|Array of fastq files and their read groups.
+`outputFileNamePrefix`|String|Output prefix to prefix output file names with.
 `windowSize`|Int|The size of non-overlapping windows.
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
+`bwaMem.runBwaMem_bwaRef`|String|The reference genome to align the sample with by BWA
+`bwaMem.runBwaMem_modules`|String|Required environment modules
 
 
 #### Optional workflow parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
-`outputFileNamePrefix`|String|basename(bam,'.bam')|Output prefix to prefix output file names with.
 
 
 #### Optional task parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
+`bwaMem.adapterTrimmingLog_timeout`|Int|48|Hours before task timeout
+`bwaMem.adapterTrimmingLog_jobMemory`|Int|12|Memory allocated indexing job
+`bwaMem.indexBam_timeout`|Int|48|Hours before task timeout
+`bwaMem.indexBam_modules`|String|"samtools/1.9"|Modules for running indexing job
+`bwaMem.indexBam_jobMemory`|Int|12|Memory allocated indexing job
+`bwaMem.bamMerge_timeout`|Int|72|Hours before task timeout
+`bwaMem.bamMerge_modules`|String|"samtools/1.9"|Required environment modules
+`bwaMem.bamMerge_jobMemory`|Int|32|Memory allocated indexing job
+`bwaMem.runBwaMem_timeout`|Int|96|Hours before task timeout
+`bwaMem.runBwaMem_jobMemory`|Int|32|Memory allocated for this job
+`bwaMem.runBwaMem_threads`|Int|8|Requested CPU threads
+`bwaMem.runBwaMem_addParam`|String?|None|Additional BWA parameters
+`bwaMem.adapterTrimming_timeout`|Int|48|Hours before task timeout
+`bwaMem.adapterTrimming_jobMemory`|Int|16|Memory allocated for this job
+`bwaMem.adapterTrimming_addParam`|String?|None|Additional cutadapt parameters
+`bwaMem.adapterTrimming_modules`|String|"cutadapt/1.8.3"|Required environment modules
+`bwaMem.slicerR2_timeout`|Int|48|Hours before task timeout
+`bwaMem.slicerR2_jobMemory`|Int|16|Memory allocated for this job
+`bwaMem.slicerR2_modules`|String|"slicer/0.3.0"|Required environment modules
+`bwaMem.slicerR1_timeout`|Int|48|Hours before task timeout
+`bwaMem.slicerR1_jobMemory`|Int|16|Memory allocated for this job
+`bwaMem.slicerR1_modules`|String|"slicer/0.3.0"|Required environment modules
+`bwaMem.countChunkSize_timeout`|Int|48|Hours before task timeout
+`bwaMem.countChunkSize_jobMemory`|Int|16|Memory allocated for this job
+`bwaMem.outputFileNamePrefix`|String|"output"|Prefix for output file
+`bwaMem.numChunk`|Int|1|number of chunks to split fastq file [1, no splitting]
+`bwaMem.doTrim`|Boolean|false|if true, adapters will be trimmed before alignment
+`bwaMem.trimMinLength`|Int|1|minimum length of reads to keep [1]
+`bwaMem.trimMinQuality`|Int|0|minimum quality of read ends to keep [0]
+`bwaMem.adapter1`|String|"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"|adapter sequence to trim from read 1 [AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC]
+`bwaMem.adapter2`|String|"AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"|adapter sequence to trim from read 2 [AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT]
+`bamMerge.jobMemory`|Int|32|Memory allocated indexing job
+`bamMerge.modules`|String|"samtools/1.9"|Required environment modules
+`bamMerge.timeout`|Int|72|Hours before task timeout
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -86,6 +121,7 @@ Parameter|Value|Default|Description
 
 Output | Type | Description
 ---|---|---
+`bam`|File?|output merged bam aligned to genome
 `segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.
 `segmentsWithSubclonalStatus`|File|Same as `segments` but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
 `estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.
@@ -95,31 +131,81 @@ Output | Type | Description
 `plots`|File|Archived directory of plots.
 
 
-## Niassa + Cromwell
-
-This WDL workflow is wrapped in a Niassa workflow (https://github.com/oicr-gsi/pipedev/tree/master/pipedev-niassa-cromwell-workflow) so that it can used with the Niassa metadata tracking system (https://github.com/oicr-gsi/niassa).
-
-* Building
-```
-mvn clean install
-```
-
-* Testing
-```
-mvn clean verify \
--Djava_opts="-Xmx1g -XX:+UseG1GC -XX:+UseStringDeduplication" \
--DrunTestThreads=2 \
--DskipITs=false \
--DskipRunITs=false \
--DworkingDirectory=/path/to/tmp/ \
--DschedulingHost=niassa_oozie_host \
--DwebserviceUrl=http://niassa-url:8080 \
--DwebserviceUser=niassa_user \
--DwebservicePassword=niassa_user_password \
--Dcromwell-host=http://cromwell-url:8000
-```
-
-## Support
+## Commands
+ This section lists command(s) run by WORKFLOW workflow
+ 
+ * Running WORKFLOW
+ 
+ IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+ 
+ MERGE BAMS
+  ```
+ samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
+  ```
+ READCOUNTER
+  ```
+ samtools index ~{bam}
+ 
+ # calculate chromosomes to analyze (with reads) from input data
+ CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+ 
+ # write out a chromosomes with reads for ichorCNA
+ # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+ echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+ 
+ # convert
+ readCounter \
+ --window ~{windowSize} \
+ --quality ~{minimumMappingQuality} \
+ --chromosome "${CHROMOSOMES_WITH_READS}" \
+ ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+  ```
+ RUN ICHORCNA
+  ```
+     runIchorCNA \
+     --WIG ~{wig} \
+     ~{"--NORMWIG " + normalWig} \
+     --gcWig ~{gcWig} \
+     ~{"--mapWig " + mapWig} \
+     ~{"--normalPanel " + normalPanel} \
+     ~{"--exons.bed " + exonsBed} \
+     --id ~{outputFileNamePrefix} \
+     ~{"--centromere " + centromere} \
+     ~{"--minMapScore " + minMapScore} \
+     ~{"--rmCentromereFlankLength " + rmCentromereFlankLength} \
+     ~{"--normal " + normal} \
+     ~{"--scStates " + scStates} \
+     ~{"--coverage " + coverage} \
+     ~{"--lambda " + lambda} \
+     ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
+     ~{"--ploidy " + ploidy} \
+     ~{"--maxCN " + maxCN} \
+     ~{true="--estimateNormal True" false="--estimateNormal False" estimateNormal} \
+     ~{true="--estimateScPrevalence True" false="--estimateScPrevalence  False" estimateScPrevalence} \
+     ~{true="--estimatePloidy True" false="--estimatePloidy False" estimatePloidy} \
+     ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
+     ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
+     ~{"--minSegmentBins " + minSegmentBins} \
+     ~{"--altFracThreshold " + altFracThreshold} \
+     ~{"--chrNormalize " + chrNormalize} \
+     ~{"--chrTrain " + chrTrain} \
+     --chrs "c(~{sep="," chrs})" \
+     ~{"--genomeBuild " + genomeBuild} \
+     ~{"--genomeStyle " + genomeStyle} \
+     ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
+     ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
+     ~{true="--includeHOMD True" false="--includeHOMD False" includeHOMD} \
+     ~{"--txnE " + txnE} \
+     ~{"--txnStrength " + txnStrength} \
+     ~{"--plotFileType " + plotFileType} \
+     ~{"--plotYLim " + plotYLim} \
+     ~{"--libdir " + libdir} \
+     --outDir ~{outDir}
+ 
+     # compress directory of plots
+     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+  ```
+ ## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 

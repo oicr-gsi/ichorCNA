@@ -1,0 +1,74 @@
+## Commands
+This section lists command(s) run by WORKFLOW workflow
+
+* Running WORKFLOW
+
+IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+
+MERGE BAMS
+ ```
+samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
+ ```
+READCOUNTER
+ ```
+samtools index ~{bam}
+
+# calculate chromosomes to analyze (with reads) from input data
+CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+
+# write out a chromosomes with reads for ichorCNA
+# split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+
+# convert
+readCounter \
+--window ~{windowSize} \
+--quality ~{minimumMappingQuality} \
+--chromosome "${CHROMOSOMES_WITH_READS}" \
+~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+ ```
+RUN ICHORCNA
+ ```
+    runIchorCNA \
+    --WIG ~{wig} \
+    ~{"--NORMWIG " + normalWig} \
+    --gcWig ~{gcWig} \
+    ~{"--mapWig " + mapWig} \
+    ~{"--normalPanel " + normalPanel} \
+    ~{"--exons.bed " + exonsBed} \
+    --id ~{outputFileNamePrefix} \
+    ~{"--centromere " + centromere} \
+    ~{"--minMapScore " + minMapScore} \
+    ~{"--rmCentromereFlankLength " + rmCentromereFlankLength} \
+    ~{"--normal " + normal} \
+    ~{"--scStates " + scStates} \
+    ~{"--coverage " + coverage} \
+    ~{"--lambda " + lambda} \
+    ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
+    ~{"--ploidy " + ploidy} \
+    ~{"--maxCN " + maxCN} \
+    ~{true="--estimateNormal True" false="--estimateNormal False" estimateNormal} \
+    ~{true="--estimateScPrevalence True" false="--estimateScPrevalence  False" estimateScPrevalence} \
+    ~{true="--estimatePloidy True" false="--estimatePloidy False" estimatePloidy} \
+    ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
+    ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
+    ~{"--minSegmentBins " + minSegmentBins} \
+    ~{"--altFracThreshold " + altFracThreshold} \
+    ~{"--chrNormalize " + chrNormalize} \
+    ~{"--chrTrain " + chrTrain} \
+    --chrs "c(~{sep="," chrs})" \
+    ~{"--genomeBuild " + genomeBuild} \
+    ~{"--genomeStyle " + genomeStyle} \
+    ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
+    ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
+    ~{true="--includeHOMD True" false="--includeHOMD False" includeHOMD} \
+    ~{"--txnE " + txnE} \
+    ~{"--txnStrength " + txnStrength} \
+    ~{"--plotFileType " + plotFileType} \
+    ~{"--plotYLim " + plotYLim} \
+    ~{"--libdir " + libdir} \
+    --outDir ~{outDir}
+
+    # compress directory of plots
+    tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+ ```
