@@ -1,200 +1,6 @@
 [
   {
-    "id": "Chro8-002",
-    "description": "ichorCNA workflow test",
-    "arguments": {
-      "ichorCNA.bamMerge.jobMemory": null,
-      "ichorCNA.bamMerge.modules": null,
-      "ichorCNA.bamMerge.timeout": null,
-      "ichorCNA.bwaMem.adapter1": null,
-      "ichorCNA.bwaMem.adapter2": null,
-      "ichorCNA.bwaMem.adapterTrimmingLog_jobMemory": null,
-      "ichorCNA.bwaMem.adapterTrimmingLog_timeout": null,
-      "ichorCNA.bwaMem.adapterTrimming_addParam": null,
-      "ichorCNA.bwaMem.adapterTrimming_jobMemory": null,
-      "ichorCNA.bwaMem.adapterTrimming_modules": null,
-      "ichorCNA.bwaMem.adapterTrimming_timeout": null,
-      "ichorCNA.bwaMem.bamMerge_jobMemory": null,
-      "ichorCNA.bwaMem.bamMerge_modules": null,
-      "ichorCNA.bwaMem.bamMerge_timeout": null,
-      "ichorCNA.bwaMem.countChunkSize_jobMemory": null,
-      "ichorCNA.bwaMem.countChunkSize_timeout": null,
-      "ichorCNA.bwaMem.doTrim": null,
-      "ichorCNA.bwaMem.indexBam_jobMemory": null,
-      "ichorCNA.bwaMem.indexBam_modules": null,
-      "ichorCNA.bwaMem.indexBam_timeout": null,
-      "ichorCNA.bwaMem.numChunk": null,
-      "ichorCNA.bwaMem.outputFileNamePrefix": null,
-      "ichorCNA.bwaMem.runBwaMem_addParam": null,
-      "ichorCNA.bwaMem.runBwaMem_bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa",
-      "ichorCNA.bwaMem.runBwaMem_jobMemory": null,
-      "ichorCNA.bwaMem.runBwaMem_modules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
-      "ichorCNA.bwaMem.runBwaMem_threads": null,
-      "ichorCNA.bwaMem.runBwaMem_timeout": null,
-      "ichorCNA.bwaMem.slicerR1_jobMemory": null,
-      "ichorCNA.bwaMem.slicerR1_modules": null,
-      "ichorCNA.bwaMem.slicerR1_timeout": null,
-      "ichorCNA.bwaMem.slicerR2_jobMemory": null,
-      "ichorCNA.bwaMem.slicerR2_modules": null,
-      "ichorCNA.bwaMem.slicerR2_timeout": null,
-      "ichorCNA.bwaMem.trimMinLength": null,
-      "ichorCNA.bwaMem.trimMinQuality": null,
-      "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
-      "ichorCNA.inputGroups": [
-        {
-          "fastqR1": {
-            "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r1.fastq.gz",
-              "externalIds": [
-                {
-                    "id": "TEST",
-                    "provider": "TEST"
-                }
-              ]
-            },
-            "type": "EXTERNAL"
-          },
-          "fastqR2": {
-            "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/Chro8-002-T.cocleaned_r2.fastq.gz",
-              "externalIds": [
-                {
-                    "id": "TEST",
-                    "provider": "TEST"
-                }
-              ]
-            },
-            "type": "EXTERNAL"
-          },
-          "readGroups": "'@RG\\tID:1\\tLB:neat_5x_EX_hg19_golden\\tPL:illumina\\tPU:run_barcode\\tSM:neat_5x_EX_hg19_golden'"
-        }
-      ],
-      "ichorCNA.minimumMappingQuality": 20,
-      "ichorCNA.outputFileNamePrefix": "Chro8-002-T",
-      "ichorCNA.runIchorCNA.altFracThreshold": null,
-      "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "ichorCNA.runIchorCNA.chrNormalize": null,
-      "ichorCNA.runIchorCNA.chrTrain": null,
-      "ichorCNA.runIchorCNA.coverage": null,
-      "ichorCNA.runIchorCNA.estimateNormal": null,
-      "ichorCNA.runIchorCNA.estimatePloidy": null,
-      "ichorCNA.runIchorCNA.estimateScPrevalence": null,
-      "ichorCNA.runIchorCNA.exonsBed": null,
-      "ichorCNA.runIchorCNA.fracReadsInChrYForMale": null,
-      "ichorCNA.runIchorCNA.gcWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig",
-      "ichorCNA.runIchorCNA.genomeBuild": null,
-      "ichorCNA.runIchorCNA.genomeStyle": null,
-      "ichorCNA.runIchorCNA.includeHOMD": null,
-      "ichorCNA.runIchorCNA.lambda": null,
-      "ichorCNA.runIchorCNA.lambdaScaleHyperParam": null,
-      "ichorCNA.runIchorCNA.libdir": null,
-      "ichorCNA.runIchorCNA.mapWig": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig",
-      "ichorCNA.runIchorCNA.maxCN": null,
-      "ichorCNA.runIchorCNA.maxFracCNASubclone": null,
-      "ichorCNA.runIchorCNA.maxFracGenomeSubclone": null,
-      "ichorCNA.runIchorCNA.mem": null,
-      "ichorCNA.runIchorCNA.minMapScore": null,
-      "ichorCNA.runIchorCNA.minSegmentBins": null,
-      "ichorCNA.runIchorCNA.modules": null,
-      "ichorCNA.runIchorCNA.normal": null,
-      "ichorCNA.runIchorCNA.normalPanel": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
-      "ichorCNA.runIchorCNA.normalWig": null,
-      "ichorCNA.runIchorCNA.normalizeMaleX": null,
-      "ichorCNA.runIchorCNA.outDir": null,
-      "ichorCNA.runIchorCNA.ploidy": null,
-      "ichorCNA.runIchorCNA.plotFileType": null,
-      "ichorCNA.runIchorCNA.plotYLim": null,
-      "ichorCNA.runIchorCNA.rmCentromereFlankLength": null,
-      "ichorCNA.runIchorCNA.scStates": null,
-      "ichorCNA.runIchorCNA.timeout": null,
-      "ichorCNA.runIchorCNA.txnE": null,
-      "ichorCNA.runIchorCNA.txnStrength": null,
-      "ichorCNA.runReadCounter.mem": null,
-      "ichorCNA.runReadCounter.modules": null,
-      "ichorCNA.runReadCounter.timeout": null,
-      "ichorCNA.windowSize": 1000000
-    },
-    "engineArguments": {
-      "write_to_cache": false,
-      "read_from_cache": false
-    },
-    "metadata": {
-      "ichorCNA.bam": {
-        "contents": [
-          {
-              "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.convergedParameters": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.correctedDepth": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.estimatedCopyNumber": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.plots": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.rData": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.segments": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      },
-      "ichorCNA.segmentsWithSubclonalStatus": {
-        "contents": [
-          {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Chro8-002_@JENKINSID@"
-          }
-        ],
-        "type": "ALL"
-      }
-    },
-    "validators": [
-      {
-        "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
-        "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/Chro8-002.metrics",
-        "type": "script"
-      }
-    ]
-  },
-  {
-    "id": "MATS_0002",
+    "id": "TGL49_1",
     "description": "ichorCNA workflow test",
     "arguments": {
       "ichorCNA.bamMerge.jobMemory": null,
@@ -238,7 +44,7 @@
         {
           "fastqR1": {
             "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r1.fastq.gz",
+              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0083_Ov_P_PE_321_WG_210927_NB551051_0240_AH5GMGBGXK_1_AACTGAGC-CAATCAGG_R1.fastq.gz",
               "externalIds": [
                 {
                   "id": "TEST",
@@ -250,7 +56,7 @@
           },
           "fastqR2": {
             "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/SWID_15339588_MATS_0002_Ly_P_PE_131143_WG_MATS08_130204_GMP2_191120_M00146_0126_000000000-D7L6T_ACTGAGGT-CTGTTGAC_L001_001.annotated_r2.fastq.gz",
+              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0083_Ov_P_PE_321_WG_210927_NB551051_0240_AH5GMGBGXK_1_AACTGAGC-CAATCAGG_R2.fastq.gz",
               "externalIds": [
                 {
                   "id": "TEST",
@@ -260,11 +66,11 @@
             },
             "type": "EXTERNAL"
           },
-          "readGroups": "'@RG\\tID:121005_h804_0096_AD0V4NACXX-NoIndex_6\\tLB:PCSI0022C\\tPL:ILLUMINA\\tPU:121005_h804_0096_AD0V4NACXX-NoIndex_6\\tSM:PCSI0022C'"
+          "readGroups": "'@RG\\tID:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tLB:TGL49_0083_Ov_P_PE_321_WG\\tPL:ILLUMINA\\tPU:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tSM:TGL49_0083_Ov_P_210913WG'"
         }
       ],
       "ichorCNA.minimumMappingQuality": 20,
-      "ichorCNA.outputFileNamePrefix": "MATS_0002",
+      "ichorCNA.outputFileNamePrefix": "TGL49_0083_Ov_P_PE_321_WG",
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
       "ichorCNA.runIchorCNA.chrNormalize": null,
@@ -382,13 +188,13 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/MATS_0002.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_1.metrics",
         "type": "script"
       }
     ]
   },
   {
-    "id": "TGL49",
+    "id": "TGL49_2",
     "description": "ichorCNA workflow test",
     "arguments": {
       "ichorCNA.bamMerge.jobMemory": null,
