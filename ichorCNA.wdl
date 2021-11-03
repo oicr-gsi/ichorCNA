@@ -33,10 +33,10 @@ workflow ichorCNA {
         outputFileNamePrefix = outputFileNamePrefix
     }
   }
-
+  
   call runReadCounter{
     input:
-      bam=select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam]),
+      bam=select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
