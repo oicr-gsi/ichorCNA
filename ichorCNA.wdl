@@ -1,20 +1,42 @@
 version 1.0
 
-workflow ichorCNA {
+import "imports/pull_bwa.wdl" as bwaMem
 
+struct InputGroup {
+  File fastqR1
+  File fastqR2
+  String readGroups
+}
+
+workflow ichorCNA {
   input {
-    File bam
-    File bamIndex
-    String outputFileNamePrefix = basename(bam, '.bam')
+    Array[InputGroup] inputGroups
+    String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
   }
 
+  scatter (ig in inputGroups) {
+    call bwaMem.bwaMem {
+      input:
+        fastqR1 = ig.fastqR1,
+        fastqR2 = ig.fastqR2,
+        readGroups = ig.readGroups
+    }
+  }
+
+  if (length(inputGroups) > 1) {
+    call bamMerge {
+      input:
+        bams = bwaMem.bwaMemBam, #check
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+  }
+  
   call runReadCounter{
     input:
-      bam=bam,
-      bamIndex=bamIndex,
+      bam=select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -29,6 +51,7 @@ workflow ichorCNA {
   }
 
   output {
+    File? bam = bamMerge.outputMergedBam
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -39,8 +62,7 @@ workflow ichorCNA {
   }
 
   parameter_meta {
-    bam: "Input bam."
-    bamIndex: "Input bam index (must be .bam.bai)."
+    inputGroups: "Array of fastq files and their read groups."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
@@ -69,10 +91,53 @@ workflow ichorCNA {
 
 }
 
+#copy from bwaMem
+task bamMerge{
+    input {
+        Array[File] bams
+        String outputFileNamePrefix
+        Int   jobMemory = 32
+        String modules  = "samtools/1.9"
+        Int timeout     = 72
+    }
+    parameter_meta {
+        bams:  "Input bam files"
+        outputFileNamePrefix: "Prefix for output file"
+        jobMemory: "Memory allocated indexing job"
+        modules:   "Required environment modules"
+        timeout:   "Hours before task timeout"
+    }
+
+    String resultMergedBam = "~{outputFileNamePrefix}.bam"
+
+    command <<<
+        set -euo pipefail
+        samtools merge \
+        -c \
+        ~{resultMergedBam} \
+        ~{sep=" " bams}
+    >>>
+
+    runtime {
+        memory: "~{jobMemory} GB"
+        modules: "~{modules}"
+        timeout: "~{timeout}"
+    }
+
+    output {
+        File outputMergedBam = "~{resultMergedBam}"
+    }
+
+    meta {
+        output_meta: {
+            outputMergedBam: "output merged bam aligned to genome"
+        }
+    }
+}
+
 task runReadCounter {
   input{
     File bam
-    File bamIndex
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -84,6 +149,8 @@ task runReadCounter {
 
   command <<<
     set -euxo pipefail
+
+    samtools index ~{bam}
 
     # calculate chromosomes to analyze (with reads) from input data
     CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
@@ -113,7 +180,6 @@ task runReadCounter {
 
   parameter_meta {
     bam: "Input bam."
-    bamIndex: "Input bam index (must be .bam.bai)."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
