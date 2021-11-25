@@ -1,6 +1,6 @@
 [
   {
-    "id": "TGL49_1",
+    "id": "TGL49_0083",
     "description": "ichorCNA workflow test",
     "arguments": {
       "ichorCNA.bamMerge.jobMemory": null,
@@ -122,7 +122,7 @@
       "ichorCNA.bam": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -130,7 +130,7 @@
       "ichorCNA.convergedParameters": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -138,7 +138,7 @@
       "ichorCNA.correctedDepth": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -146,7 +146,7 @@
       "ichorCNA.estimatedCopyNumber": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -154,7 +154,7 @@
       "ichorCNA.plots": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -162,7 +162,7 @@
       "ichorCNA.rData": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -170,7 +170,7 @@
       "ichorCNA.segments": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -178,7 +178,7 @@
       "ichorCNA.segmentsWithSubclonalStatus": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_MATS_0002_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -188,13 +188,13 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_1.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_0083.metrics",
         "type": "script"
       }
     ]
   },
   {
-    "id": "TGL49_2",
+    "id": "TGL49_0111",
     "description": "ichorCNA workflow test",
     "arguments": {
       "ichorCNA.bamMerge.jobMemory": null,
@@ -343,7 +343,7 @@
       "ichorCNA.bam": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -351,7 +351,7 @@
       "ichorCNA.convergedParameters": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -359,7 +359,7 @@
       "ichorCNA.correctedDepth": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -367,7 +367,7 @@
       "ichorCNA.estimatedCopyNumber": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -375,7 +375,7 @@
       "ichorCNA.plots": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -383,7 +383,7 @@
       "ichorCNA.rData": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -391,7 +391,7 @@
       "ichorCNA.segments": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -399,7 +399,7 @@
       "ichorCNA.segmentsWithSubclonalStatus": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -409,7 +409,7 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_0111.metrics",
         "type": "script"
       }
     ]
