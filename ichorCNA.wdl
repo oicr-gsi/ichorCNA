@@ -179,7 +179,7 @@ task calculateCoverage {
 
   command <<<
   samtools index ~{inputbam} ~{resultBai}
-  samtools coverage ~{inputbam} | head -n 25 | tail -n 24 | awk '{ total += $6; count++ } END { print total/count }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
   >>>
 
   output {
