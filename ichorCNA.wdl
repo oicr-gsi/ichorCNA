@@ -20,6 +20,17 @@ workflow ichorCNA {
     String inputType
   }
 
+  parameter_meta {
+    inputGroups: "Array of fastq files and their read groups (optional)."
+    inputBam: "Array of one or multiple bam files (optional)."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    windowSize: "The size of non-overlapping windows."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored."
+    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    provisionBam: "Boolean, to provision out bam file and coverage metrics"
+    inputType: "one of either fastq or bam"
+  }
+
   if(inputType=="fastq" && defined(inputGroups)){
     Array[InputGroup] inputGroups_ = select_first([inputGroups])
     scatter (ig in inputGroups_) {
@@ -96,15 +107,6 @@ workflow ichorCNA {
     File plots = runIchorCNA.plots
   }
 
-  parameter_meta {
-    inputGroups: "Array of fastq files and their read groups."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    windowSize: "The size of non-overlapping windows."
-    minimumMappingQuality: "Mapping quality value below which reads are ignored."
-    chromosomesToAnalyze: "Chromosomes in the bam reference file."
-    provisionBam: "Boolean, to provision out bam file and coverage metrics"
-  }
-
   meta {
     author: "Michael Laszloffy"
     email: "michael.laszloffy@oicr.on.ca"
@@ -112,6 +114,10 @@ workflow ichorCNA {
     dependencies: [
       {
         name: "samtools/1.9",
+        url: "http://www.htslib.org/"
+      },
+      {
+        name: "samtools/1.14",
         url: "http://www.htslib.org/"
       },
       {
@@ -152,7 +158,6 @@ task bamMerge{
         -c \
         ~{resultMergedBam} \
         ~{sep=" " bams}
-        #TODO ADD SORT
     >>>
 
     runtime {
