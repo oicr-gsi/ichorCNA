@@ -11,9 +11,6 @@ struct InputGroup {
 workflow ichorCNA {
   input {
     Array[InputGroup] inputGroups
-    #Array? bamInput
-    #File? bamInput
-    #File? bamIndex
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -22,9 +19,6 @@ workflow ichorCNA {
     Boolean provisionBam
   }
 
-  #if(inputType=="fastq" && defined(inputGroups)){
-    #Array inputs = select_all([inputGroups])
-    #Array[InputGroup] inputs = select_first([inputGroups])
   scatter (ig in inputGroups) {
     call bwaMem.bwaMem {
       input:
@@ -42,42 +36,15 @@ workflow ichorCNA {
     }
   }
 
-  #}
-
-  # if(inputType=="bam" && defined(bamInput)){
-  #   #Array bamInput_ = select_all([bamInput])
-  #   if (length(bamInput) > 1 ){
-  #     call bamMerge {
-  #       input:
-  #       bams = bamInput,
-  #       outputFileNamePrefix = outputFileNamePrefix
-  #     }
-  #   }
-  # }
-
-  # workaround for converting File? to File
-  #if (defined(bamInput)) {
-
-  #}
-  #File selectedBam = select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0],bamInput[0]])
-
   if(provisionBam==true){
     call calculateCoverage {
-      #File? selectedBam = select_first([bwaMem.bwaMemBam])[0]
       input:
         inputbam = select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
         outputFileNamePrefix = outputFileNamePrefix
-        #inputbam = select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0],bamInput_])
     }
   }
 
-  #read2s = if (defined(fastqR2)) then select_first([adapterTrimming.resultR2, p.right]) else fastqR2,
-
   call runReadCounter{
-    #if (defined(bamInput)) {
-
-    #}
-    #inputbam = select_first([bamMerge.outputMergedBam,bamInput_])
     input:
       bam= select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
       outputFileNamePrefix=outputFileNamePrefix,
@@ -108,8 +75,6 @@ workflow ichorCNA {
 
   parameter_meta {
     inputGroups: "Array of fastq files and their read groups."
-    bamInput: "bam file"
-    #bamIndex: "bam index file"
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
@@ -204,8 +169,6 @@ task calculateCoverage {
   File outbam = "~{inputbam}"
   File bamIndex = "~{resultBai}"
   File coverageReport = "~{outputFileNamePrefix}_coverage.json"
-  #File? example_optional = "example_optional.txt"
-  #Array[File?] array_optional = ["arr1.dne.txt", "arr2.exists.txt"]
   }
 
   runtime {
