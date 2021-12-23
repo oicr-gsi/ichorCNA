@@ -17,9 +17,10 @@ workflow ichorCNA {
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Boolean provisionBam
+    String inputType
   }
 
-  if(defined(inputGroups)){
+  if(inputType=="fastq" && defined(inputGroups)){
     Array[InputGroup] inputGroups_ = select_first([inputGroups])
     scatter (ig in inputGroups_) {
       call bwaMem.bwaMem {
@@ -39,31 +40,36 @@ workflow ichorCNA {
     }
 
     if (length(inputGroups_) == 1 ) {
-      File bam_ = bwaMem.bwaMemBam[0]
+      File bwaMemBam = bwaMem.bwaMemBam[0]
     }
   }
 
-  if(defined(inputBam)){
+  if(inputType=="bam" && defined(inputBam)){
     Array[File] inputBam_ = select_first([inputBam,[]])
-    call bamMerge as inputBamMerge {
-      input:
-        bams = inputBam_,
-        outputFileNamePrefix = outputFileNamePrefix
+    if (length(inputBam_) > 1 ) {
+      call bamMerge as inputBamMerge {
+        input:
+          bams = inputBam_,
+          outputFileNamePrefix = outputFileNamePrefix
+      }
+    }
+
+    if (length(inputBam_) == 1 ) {
+      File singleInputBam = inputBam_[0]
     }
   }
 
   if(provisionBam==true){
-
     call calculateCoverage {
       input:
-        inputbam = select_first([bamMerge.outputMergedBam,bam_,inputBamMerge.outputMergedBam]),
+        inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
         outputFileNamePrefix = outputFileNamePrefix
     }
   }
 
   call runReadCounter{
     input:
-      bam= select_first([bamMerge.outputMergedBam,bam_,inputBamMerge.outputMergedBam]),
+      bam= select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
