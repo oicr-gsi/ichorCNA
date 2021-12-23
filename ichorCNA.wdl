@@ -10,43 +10,60 @@ struct InputGroup {
 
 workflow ichorCNA {
   input {
-    Array[InputGroup] inputGroups
+    Array[InputGroup]? inputGroups
+    Array[File]? inputBam
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
-    String inputType
     Boolean provisionBam
   }
 
-  scatter (ig in inputGroups) {
-    call bwaMem.bwaMem {
-      input:
-        fastqR1 = ig.fastqR1,
-        fastqR2 = ig.fastqR2,
-        readGroups = ig.readGroups
+  if(defined(inputGroups)){
+    Array[InputGroup] inputGroups_ = select_first([inputGroups])
+    scatter (ig in inputGroups_) {
+      call bwaMem.bwaMem {
+        input:
+          fastqR1 = ig.fastqR1,
+          fastqR2 = ig.fastqR2,
+          readGroups = ig.readGroups
+      }
+    }
+
+    if (length(inputGroups_) > 1 ) {
+      call bamMerge {
+        input:
+          bams = bwaMem.bwaMemBam,
+          outputFileNamePrefix = outputFileNamePrefix
+      }
+    }
+
+    if (length(inputGroups_) == 1 ) {
+      File bam_ = bwaMem.bwaMemBam[0]
     }
   }
 
-  if (length(inputGroups) > 1 ) {
-    call bamMerge {
+  if(defined(inputBam)){
+    Array[File] inputBam_ = select_first([inputBam,[]])
+    call bamMerge as inputBamMerge {
       input:
-        bams = bwaMem.bwaMemBam,
+        bams = inputBam_,
         outputFileNamePrefix = outputFileNamePrefix
     }
   }
 
   if(provisionBam==true){
+
     call calculateCoverage {
       input:
-        inputbam = select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
+        inputbam = select_first([bamMerge.outputMergedBam,bam_,inputBamMerge.outputMergedBam]),
         outputFileNamePrefix = outputFileNamePrefix
     }
   }
 
   call runReadCounter{
     input:
-      bam= select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
+      bam= select_first([bamMerge.outputMergedBam,bam_,inputBamMerge.outputMergedBam]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -61,7 +78,7 @@ workflow ichorCNA {
   }
 
   output {
-    File? bam = calculateCoverage.outbam#### change thi bamMerge.outputMergedBam
+    File? bam = calculateCoverage.outbam
     File? bamIndex = calculateCoverage.bamIndex
     File? coverageReport = calculateCoverage.coverageReport
     File segments = runIchorCNA.segments
@@ -79,7 +96,7 @@ workflow ichorCNA {
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
-    inputType: "one of either fastq or bam"
+    provisionBam: "Boolean, to provision out bam file and coverage metrics"
   }
 
   meta {
