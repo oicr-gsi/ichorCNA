@@ -461,7 +461,20 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
-      "ichorCNA.inputBam": ["/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL48_0001_Ct_T_PE_312_WG_UMB-001-6M-P_INPUT_201130_NB551051_0196_AH3GGWBGXH_1_CTTGTCGA-CGATGTTC.bam"],
+      "ichorCNA.inputBam": [
+        {
+          "contents": {
+            "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL48_0001_Ct_T_PE_312_WG_UMB-001-6M-P_INPUT_201130_NB551051_0196_AH3GGWBGXH_1_CTTGTCGA-CGATGTTC.bam",
+            "externalIds": [
+              {
+                "id": "TEST",
+                "provider": "TEST"
+              }
+            ]
+          },
+          "type": "EXTERNAL"
+        }
+      ],
       "ichorCNA.inputGroups": null,
       "ichorCNA.inputType":"bam",
       "ichorCNA.minimumMappingQuality": 20,
