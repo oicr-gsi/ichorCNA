@@ -69,8 +69,10 @@
           "readGroups": "'@RG\\tID:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tLB:TGL49_0083_Ov_P_PE_321_WG\\tPL:ILLUMINA\\tPU:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tSM:TGL49_0083_Ov_P_210913WG'"
         }
       ],
+      "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL49_0083_Ov_P_PE_321_WG",
+      "ichorCNA.provisionBam": false,
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
       "ichorCNA.runIchorCNA.chrNormalize": null,
@@ -290,8 +292,10 @@
           "readGroups": "'@RG\\tID:210614_NB551051_0224_AH57NFBGXJ-ATCACACG-GTAGCGTA_1\\tLB:TGL49_0111_Cf_U_PE_330_WG\\tPL:ILLUMINA\\tPU:210614_NB551051_0224_AH57NFBGXJ-ATCACACG-GTAGCGTA_1\\tSM:TGL49_0111_Cf_U_LFS_5956'"
         }
       ],
+      "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL49_0111_Cf_U_PE_330_WG",
+      "ichorCNA.provisionBam": true,
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
       "ichorCNA.runIchorCNA.chrNormalize": null,
