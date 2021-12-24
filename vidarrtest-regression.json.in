@@ -130,6 +130,14 @@
         ],
         "type": "ALL"
       },
+      "ichorCNA.bamIndex": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
       "ichorCNA.convergedParameters": {
         "contents": [
           {
@@ -139,6 +147,14 @@
         "type": "ALL"
       },
       "ichorCNA.correctedDepth": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.coverageReport": {
         "contents": [
           {
             "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
@@ -354,6 +370,14 @@
         ],
         "type": "ALL"
       },
+      "ichorCNA.bamIndex": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
       "ichorCNA.convergedParameters": {
         "contents": [
           {
@@ -363,6 +387,14 @@
         "type": "ALL"
       },
       "ichorCNA.correctedDepth": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.coverageReport": {
         "contents": [
           {
             "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
@@ -536,6 +568,14 @@
         ],
         "type": "ALL"
       },
+      "ichorCNA.bamIndex": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
       "ichorCNA.convergedParameters": {
         "contents": [
           {
@@ -545,6 +585,14 @@
         "type": "ALL"
       },
       "ichorCNA.correctedDepth": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.coverageReport": {
         "contents": [
           {
             "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
