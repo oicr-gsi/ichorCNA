@@ -663,7 +663,7 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_0111.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL48_0001.metrics",
         "type": "script"
       }
     ]
