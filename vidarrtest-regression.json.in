@@ -40,7 +40,13 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+      "ichorCNA.ichorCNA.calculateCoverage.jobMemory": null,
+      "ichorCNA.ichorCNA.calculateCoverage.modules": null,
+      "ichorCNA.ichorCNA.calculateCoverage.timeout": null,
       "ichorCNA.inputBam": null,
+      "ichorCNA.inputBamMerge.jobMemory": null,
+      "ichorCNA.inputBamMerge.modules": null,
+      "ichorCNA.inputBamMerge.timeout": null,
       "ichorCNA.inputGroups": [
         {
           "fastqR1": {
@@ -253,7 +259,13 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+      "ichorCNA.ichorCNA.calculateCoverage.jobMemory": null,
+      "ichorCNA.ichorCNA.calculateCoverage.modules": null,
+      "ichorCNA.ichorCNA.calculateCoverage.timeout": null,
       "ichorCNA.inputBam": null,
+      "ichorCNA.inputBamMerge.jobMemory": null,
+      "ichorCNA.inputBamMerge.modules": null,
+      "ichorCNA.inputBamMerge.timeout": null,
       "ichorCNA.inputGroups": [
         {
           "fastqR1": {
@@ -493,6 +505,9 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+      "ichorCNA.ichorCNA.calculateCoverage.jobMemory": null,
+      "ichorCNA.ichorCNA.calculateCoverage.modules": null,
+      "ichorCNA.ichorCNA.calculateCoverage.timeout": null,
       "ichorCNA.inputBam": [
         {
           "contents": {
@@ -507,6 +522,9 @@
           "type": "EXTERNAL"
         }
       ],
+      "ichorCNA.inputBamMerge.jobMemory": null,
+      "ichorCNA.inputBamMerge.modules": null,
+      "ichorCNA.inputBamMerge.timeout": null,
       "ichorCNA.inputGroups": null,
       "ichorCNA.inputType":"bam",
       "ichorCNA.minimumMappingQuality": 20,
