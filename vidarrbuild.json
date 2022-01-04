@@ -1,6 +1,6 @@
 {
     "names": [
-        "ichorcna_full_depth"
+        "ichorcna"
     ],
     "wdl": "ichorCNA.wdl"
 }
