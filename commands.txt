@@ -9,6 +9,12 @@ MERGE BAMS
  ```
 samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
  ```
+CALCULATE COVERAGE
+```
+samtools index ~{inputbam} ~{resultBai}
+
+samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+```
 READCOUNTER
  ```
 samtools index ~{bam}

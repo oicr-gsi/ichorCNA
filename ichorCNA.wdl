@@ -10,38 +10,82 @@ struct InputGroup {
 
 workflow ichorCNA {
   input {
-    Array[InputGroup] inputGroups
+    Array[InputGroup]? inputGroups
+    Array[File]? inputBam
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
+    Boolean provisionBam
+    String inputType
   }
 
-  scatter (ig in inputGroups) {
-    call bwaMem.bwaMem {
-      input:
-        fastqR1 = ig.fastqR1,
-        fastqR2 = ig.fastqR2,
-        readGroups = ig.readGroups
+  parameter_meta {
+    inputGroups: "Array of fastq files and their read groups (optional)."
+    inputBam: "Array of one or multiple bam files (optional)."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    windowSize: "The size of non-overlapping windows."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored."
+    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    provisionBam: "Boolean, to provision out bam file and coverage metrics"
+    inputType: "one of either fastq or bam"
+  }
+
+  if(inputType=="fastq" && defined(inputGroups)){
+    Array[InputGroup] inputGroups_ = select_first([inputGroups])
+    scatter (ig in inputGroups_) {
+      call bwaMem.bwaMem {
+        input:
+          fastqR1 = ig.fastqR1,
+          fastqR2 = ig.fastqR2,
+          readGroups = ig.readGroups
+      }
+    }
+
+    if (length(inputGroups_) > 1 ) {
+      call bamMerge {
+        input:
+          bams = bwaMem.bwaMemBam,
+          outputFileNamePrefix = outputFileNamePrefix
+      }
+    }
+
+    if (length(inputGroups_) == 1 ) {
+      File bwaMemBam = bwaMem.bwaMemBam[0]
     }
   }
 
-  if (length(inputGroups) > 1) {
-    call bamMerge {
+  if(inputType=="bam" && defined(inputBam)){
+    Array[File] inputBam_ = select_first([inputBam,[]])
+    if (length(inputBam_) > 1 ) {
+      call bamMerge as inputBamMerge {
+        input:
+          bams = inputBam_,
+          outputFileNamePrefix = outputFileNamePrefix
+      }
+    }
+
+    if (length(inputBam_) == 1 ) {
+      File singleInputBam = inputBam_[0]
+    }
+  }
+
+  if(provisionBam==true){
+    call calculateCoverage {
       input:
-        bams = bwaMem.bwaMemBam, #check
+        inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
         outputFileNamePrefix = outputFileNamePrefix
     }
   }
-  
+
   call runReadCounter{
     input:
-      bam=select_first([bamMerge.outputMergedBam,bwaMem.bwaMemBam[0]]),
+      bam= select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
       chromosomesToAnalyze=chromosomesToAnalyze
- }
+  }
 
   call runIchorCNA {
     input:
@@ -51,7 +95,9 @@ workflow ichorCNA {
   }
 
   output {
-    File? bam = bamMerge.outputMergedBam
+    File? bam = calculateCoverage.outbam
+    File? bamIndex = calculateCoverage.bamIndex
+    File? coverageReport = calculateCoverage.coverageReport
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -61,14 +107,6 @@ workflow ichorCNA {
     File plots = runIchorCNA.plots
   }
 
-  parameter_meta {
-    inputGroups: "Array of fastq files and their read groups."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    windowSize: "The size of non-overlapping windows."
-    minimumMappingQuality: "Mapping quality value below which reads are ignored."
-    chromosomesToAnalyze: "Chromosomes in the bam reference file."
-  }
-
   meta {
     author: "Michael Laszloffy"
     email: "michael.laszloffy@oicr.on.ca"
@@ -76,6 +114,10 @@ workflow ichorCNA {
     dependencies: [
       {
         name: "samtools/1.9",
+        url: "http://www.htslib.org/"
+      },
+      {
+        name: "samtools/1.14",
         url: "http://www.htslib.org/"
       },
       {
@@ -133,6 +175,51 @@ task bamMerge{
             outputMergedBam: "output merged bam aligned to genome"
         }
     }
+}
+
+task calculateCoverage {
+  input {
+    File inputbam
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  String resultBai = "~{basename(inputbam)}.bai"
+
+  command <<<
+  samtools index ~{inputbam} ~{resultBai}
+  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  >>>
+
+  output {
+  File outbam = "~{inputbam}"
+  File bamIndex = "~{resultBai}"
+  File coverageReport = "~{outputFileNamePrefix}_coverage.json"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  meta {
+    output_meta: {
+      outbam: "alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).",
+      bamIndex: "output index file for bam aligned to genome.",
+      coverageReport: "json file with the mean coverage for outbam."
+    }
+  }
 }
 
 task runReadCounter {

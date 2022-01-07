@@ -7,6 +7,7 @@ Workflow for estimating the fraction of tumor in cell-free DNA from sWGS
 ## Dependencies
 
 * [samtools 1.9](http://www.htslib.org/)
+* [samtools 1.14](http://www.htslib.org/)
 * [hmmcopy-utils 0.1.1](https://github.com/broadinstitute/ichorCNA)
 * [ichorcna 0.2](https://shahlab.ca/projects/hmmcopy_utils/)
 
@@ -23,11 +24,12 @@ java -jar cromwell.jar run ichorCNA.wdl --inputs inputs.json
 #### Required workflow parameters:
 Parameter|Value|Description
 ---|---|---
-`inputGroups`|Array[InputGroup]|Array of fastq files and their read groups.
 `outputFileNamePrefix`|String|Output prefix to prefix output file names with.
 `windowSize`|Int|The size of non-overlapping windows.
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
+`provisionBam`|Boolean|Boolean, to provision out bam file and coverage metrics
+`inputType`|String|one of either fastq or bam
 `bwaMem.runBwaMem_bwaRef`|String|The reference genome to align the sample with by BWA
 `bwaMem.runBwaMem_modules`|String|Required environment modules
 
@@ -35,6 +37,8 @@ Parameter|Value|Description
 #### Optional workflow parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
+`inputGroups`|Array[InputGroup]?|None|Array of fastq files and their read groups (optional).
+`inputBam`|Array[File]?|None|Array of one or multiple bam files (optional).
 
 
 #### Optional task parameters:
@@ -74,6 +78,12 @@ Parameter|Value|Default|Description
 `bamMerge.jobMemory`|Int|32|Memory allocated indexing job
 `bamMerge.modules`|String|"samtools/1.9"|Required environment modules
 `bamMerge.timeout`|Int|72|Hours before task timeout
+`inputBamMerge.jobMemory`|Int|32|Memory allocated indexing job
+`inputBamMerge.modules`|String|"samtools/1.9"|Required environment modules
+`inputBamMerge.timeout`|Int|72|Hours before task timeout
+`calculateCoverage.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`calculateCoverage.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
+`calculateCoverage.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -121,7 +131,9 @@ Parameter|Value|Default|Description
 
 Output | Type | Description
 ---|---|---
-`bam`|File?|output merged bam aligned to genome
+`bam`|File?|alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).
+`bamIndex`|File?|output index file for bam aligned to genome.
+`coverageReport`|File?|json file with the mean coverage for outbam.
 `segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.
 `segmentsWithSubclonalStatus`|File|Same as `segments` but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
 `estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.
@@ -133,26 +145,32 @@ Output | Type | Description
 
 ## Commands
  This section lists command(s) run by ichorCNA workflow
- 
+
  * Running ichorCNA workflow
- 
- IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
- 
+
+ IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information or an array of bam file(s). When the input is fastqs, the ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. When the input is bam(s) the workflow will merge if necessary or continue. The next step prepares the data for ichorCNA which is the final step in the workflow.
+
  MERGE BAMS
   ```
  samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
   ```
+ CALCULATE COVERAGE
+ ```
+ samtools index ~{inputbam} ~{resultBai}
+
+ samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+ ```
  READCOUNTER
   ```
  samtools index ~{bam}
- 
+
  # calculate chromosomes to analyze (with reads) from input data
  CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
- 
+
  # write out a chromosomes with reads for ichorCNA
  # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
  echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
- 
+
  # convert
  readCounter \
  --window ~{windowSize} \
@@ -201,7 +219,7 @@ Output | Type | Description
      ~{"--plotYLim " + plotYLim} \
      ~{"--libdir " + libdir} \
      --outDir ~{outDir}
- 
+
      # compress directory of plots
      tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
   ```
