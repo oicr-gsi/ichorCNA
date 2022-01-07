@@ -215,8 +215,8 @@ task calculateCoverage {
 
   meta {
     output_meta: {
-      outbam: "alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams)."
-      bamIndex: "output index file for bam aligned to genome."
+      outbam: "alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).",
+      bamIndex: "output index file for bam aligned to genome.",
       coverageReport: "json file with the mean coverage for outbam."
     }
   }
