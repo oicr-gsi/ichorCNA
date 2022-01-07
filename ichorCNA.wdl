@@ -204,6 +204,22 @@ task calculateCoverage {
     modules: "~{modules}"
     timeout: "~{timeout}"
   }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  meta {
+    output_meta: {
+      outbam: "alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams)",
+      bamIndex: "output index file for bam aligned to genome"
+      coverageReport: "json file with the mean coverage for outbam"
+    }
+  }
 }
 
 task runReadCounter {
