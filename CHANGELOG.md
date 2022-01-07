@@ -1,5 +1,8 @@
+## 1.0.5 - 2022-01-07
+- Workflow input can be fastq pairs or an array of bam files. There is also an option to provision out the bam file used for the analysis, which includes a json file with coverage information.
+
 ## Unreleased - 2021-11-24
-[GP-2881](https://jira.oicr.on.ca/browse/GP-2881) make regression test more robust 
+[GP-2881](https://jira.oicr.on.ca/browse/GP-2881) make regression test more robust
 
 ## 1.0.4 - 2021-11-17
 - Increment version to bypass Jenkins build error
