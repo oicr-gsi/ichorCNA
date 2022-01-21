@@ -1,3 +1,7 @@
+## 1.0.6 - 2022-01-21
+- Add trimming to alignment step.
+- Update regression test module.
+
 ## 1.0.5 - 2022-01-07
 - Workflow input can be fastq pairs or an array of bam files. There is also an option to provision out the bam file used for the analysis, which includes a json file with coverage information.
 
