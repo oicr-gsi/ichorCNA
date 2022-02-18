@@ -43,6 +43,9 @@
       "ichorCNA.calculateCoverage.jobMemory": null,
       "ichorCNA.calculateCoverage.modules": null,
       "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.indexBam.jobMemory": null,
+      "ichorCNA.indexBam.modules": null,
+      "ichorCNA.indexBam.timeout": null,
       "ichorCNA.inputBam": null,
       "ichorCNA.inputBamMerge.jobMemory": null,
       "ichorCNA.inputBamMerge.modules": null,
@@ -262,6 +265,9 @@
       "ichorCNA.calculateCoverage.jobMemory": null,
       "ichorCNA.calculateCoverage.modules": null,
       "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.indexBam.jobMemory": null,
+      "ichorCNA.indexBam.modules": null,
+      "ichorCNA.indexBam.timeout": null,
       "ichorCNA.inputBam": null,
       "ichorCNA.inputBamMerge.jobMemory": null,
       "ichorCNA.inputBamMerge.modules": null,
@@ -508,6 +514,9 @@
       "ichorCNA.calculateCoverage.jobMemory": null,
       "ichorCNA.calculateCoverage.modules": null,
       "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.indexBam.jobMemory": null,
+      "ichorCNA.indexBam.modules": null,
+      "ichorCNA.indexBam.timeout": null,
       "ichorCNA.inputBam": [
         {
           "contents": {
