@@ -68,9 +68,7 @@ Parameter|Value|Default|Description
 `bwaMem.slicerR1_modules`|String|"slicer/0.3.0"|Required environment modules
 `bwaMem.countChunkSize_timeout`|Int|48|Hours before task timeout
 `bwaMem.countChunkSize_jobMemory`|Int|16|Memory allocated for this job
-`bwaMem.outputFileNamePrefix`|String|"output"|Prefix for output file
 `bwaMem.numChunk`|Int|1|number of chunks to split fastq file [1, no splitting]
-`bwaMem.doTrim`|Boolean|false|if true, adapters will be trimmed before alignment
 `bwaMem.trimMinLength`|Int|1|minimum length of reads to keep [1]
 `bwaMem.trimMinQuality`|Int|0|minimum quality of read ends to keep [0]
 `bwaMem.adapter1`|String|"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"|adapter sequence to trim from read 1 [AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC]
@@ -84,6 +82,9 @@ Parameter|Value|Default|Description
 `calculateCoverage.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
 `calculateCoverage.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `calculateCoverage.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`indexBam.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`indexBam.modules`|String|"samtools/1.9"|Environment module name and version to load (space separated) before command execution.
+`indexBam.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -133,7 +134,7 @@ Output | Type | Description
 ---|---|---
 `bam`|File?|alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).
 `bamIndex`|File?|output index file for bam aligned to genome.
-`coverageReport`|File?|json file with the mean coverage for outbam.
+`coverageReport`|File|json file with the mean coverage for outbam.
 `segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.
 `segmentsWithSubclonalStatus`|File|Same as `segments` but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
 `estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.
@@ -156,9 +157,11 @@ Output | Type | Description
   ```
  CALCULATE COVERAGE
  ```
- samtools index ~{inputbam} ~{resultBai}
-
  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+ ```
+ INDEX BAM
+ ```
+ samtools index ~{inputbam} ~{resultBai}
  ```
  READCOUNTER
   ```

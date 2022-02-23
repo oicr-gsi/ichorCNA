@@ -1,3 +1,8 @@
+## 1.0.7 - 2022-02-18
+- Output coverage report always
+- Split index and calculate coverage tasks
+- Add output prefix to bwamem task
+
 ## 1.0.6 - 2022-01-21
 - Add trimming to alignment step.
 - Update regression test module.
