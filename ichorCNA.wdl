@@ -44,17 +44,25 @@ workflow ichorCNA {
       }
     }
 
+    call preMergeBamMetrics {
+      input:
+        bam = bwaMem.bwaMemBam,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+
     if (length(inputGroups_) > 1 ) {
       call bamMerge {
         input:
           bams = bwaMem.bwaMemBam,
           outputFileNamePrefix = outputFileNamePrefix
       }
+      #get reads of each input file
     }
 
     if (length(inputGroups_) == 1 ) {
       File bwaMemBam = bwaMem.bwaMemBam[0]
     }
+
   }
 
   if(inputType=="bam" && defined(inputBam)){
@@ -65,6 +73,8 @@ workflow ichorCNA {
           bams = inputBam_,
           outputFileNamePrefix = outputFileNamePrefix
       }
+
+      #get reads of each input file
     }
 
     if (length(inputBam_) == 1 ) {
@@ -182,6 +192,52 @@ task bamMerge{
             outputMergedBam: "output merged bam aligned to genome"
         }
     }
+}
+
+task preMergeBamMetrics {
+  input {
+    Array[File] bam
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  command <<<
+  set -exo pipefail
+  for file in ~{sep=' ' bam}
+  echo "run_lane,read_count" > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  do
+    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+    read_count=$(samtools view -c "${file}")
+    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  done;
+
+  >>>
+
+  output {
+  File preMergeMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  parameter_meta {
+    bam: "Input bam pre merge."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  meta {
+    output_meta: {
+      preMergeMetrics: "csv file with bam metrics."
+    }
+  }
 }
 
 task calculateCoverage {
