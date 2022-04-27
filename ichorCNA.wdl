@@ -87,12 +87,6 @@ workflow ichorCNA {
     }
   }
 
-  call calculateCoverage {
-    input:
-      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
-      outputFileNamePrefix = outputFileNamePrefix
-  }
-
   if(provisionBam==true){
     call indexBam {
       input:
@@ -114,6 +108,12 @@ workflow ichorCNA {
       outputFileNamePrefix=outputFileNamePrefix,
       chrs=runReadCounter.ichorCNAchrs,
       wig=runReadCounter.wig
+  }
+
+  call calculateCoverage {
+    input:
+      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      outputFileNamePrefix = outputFileNamePrefix
   }
 
   output {
@@ -242,44 +242,6 @@ task preMergeBamMetrics {
   meta {
     output_meta: {
       preMergeMetrics: "csv file with bam metrics."
-    }
-  }
-}
-
-task calculateCoverage {
-  input {
-    File inputbam
-    String outputFileNamePrefix
-    Int jobMemory = 8
-    String modules = "samtools/1.14"
-    Int timeout = 12
-  }
-
-  command <<<
-  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
-  >>>
-
-  output {
-  File coverageReport = "~{outputFileNamePrefix}_coverage.json"
-  }
-
-  runtime {
-    memory: "~{jobMemory} GB"
-    modules: "~{modules}"
-    timeout: "~{timeout}"
-  }
-
-  parameter_meta {
-    inputbam: "Input bam."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
-  meta {
-    output_meta: {
-      coverageReport: "json file with the mean coverage for outbam."
     }
   }
 }
@@ -546,6 +508,44 @@ task runIchorCNA {
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots."
+    }
+  }
+}
+
+task calculateCoverage {
+  input {
+    File inputbam
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  command <<<
+  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  >>>
+
+  output {
+  File coverageReport = "~{outputFileNamePrefix}_coverage.json"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  meta {
+    output_meta: {
+      coverageReport: "json file with the mean coverage for outbam."
     }
   }
 }
