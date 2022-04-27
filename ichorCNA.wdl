@@ -44,7 +44,7 @@ workflow ichorCNA {
       }
     }
 
-    call preMergeBamMetrics {
+    call preMergeBamMetrics as preMergeMetrics{
       input:
         bam = bwaMem.bwaMemBam,
         outputFileNamePrefix = outputFileNamePrefix
@@ -67,14 +67,19 @@ workflow ichorCNA {
 
   if(inputType=="bam" && defined(inputBam)){
     Array[File] inputBam_ = select_first([inputBam,[]])
+
+    call preMergeBamMetrics {
+      input:
+        bam = inputBam_,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+
     if (length(inputBam_) > 1 ) {
       call bamMerge as inputBamMerge {
         input:
           bams = inputBam_,
           outputFileNamePrefix = outputFileNamePrefix
       }
-
-      #get reads of each input file
     }
 
     if (length(inputBam_) == 1 ) {
@@ -205,8 +210,9 @@ task preMergeBamMetrics {
 
   command <<<
   set -exo pipefail
+
+  echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   for file in ~{sep=' ' bam}
-  echo "run_lane,read_count" > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   do
     run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
     read_count=$(samtools view -c "${file}")
