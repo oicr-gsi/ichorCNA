@@ -113,6 +113,7 @@ workflow ichorCNA {
   call calculateCoverage {
     input:
       inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      params = runIchorCNA.convergedParameters,
       outputFileNamePrefix = outputFileNamePrefix
   }
 
@@ -515,6 +516,7 @@ task runIchorCNA {
 task calculateCoverage {
   input {
     File inputbam
+    File params
     String outputFileNamePrefix
     Int jobMemory = 8
     String modules = "samtools/1.14"
@@ -522,11 +524,16 @@ task calculateCoverage {
   }
 
   command <<<
-  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  read_count=$(samtools view -c ~{inputbam})
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
   >>>
 
   output {
-  File coverageReport = "~{outputFileNamePrefix}_coverage.json"
+  File coverageReport = "~{outputFileNamePrefix}_bam_metrics.csv"
   }
 
   runtime {
