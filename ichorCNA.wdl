@@ -531,12 +531,12 @@ task getMetrics {
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
   all_sols=$(cat ~{params} | tail -n 17)
-  echo $all_sols > ~{outputFileNamePrefix}_all_sols_metrics.txt
+  echo $all_sols > ~{outputFileNamePrefix}_all_sols_metrics.csv
   >>>
 
   output {
   File coverageReport = "~{outputFileNamePrefix}_bam_metrics.csv"
-  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.txt"
+  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
   }
 
   runtime {
