@@ -110,7 +110,7 @@ workflow ichorCNA {
       wig=runReadCounter.wig
   }
 
-  call calculateCoverage {
+  call getMetrics {
     input:
       inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
       params = runIchorCNA.convergedParameters,
@@ -120,7 +120,7 @@ workflow ichorCNA {
   output {
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
-    File coverageReport = calculateCoverage.coverageReport
+    File jsonMetrics = getMetrics.coverageReport
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -513,7 +513,7 @@ task runIchorCNA {
   }
 }
 
-task calculateCoverage {
+task getMetrics {
   input {
     File inputbam
     File params
@@ -530,10 +530,13 @@ task calculateCoverage {
   tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+  all_sols=$(cat ~{params} | tail -n 17)
+  echo $all_sols > ~{outputFileNamePrefix}_all_sols_metrics.txt
   >>>
 
   output {
   File coverageReport = "~{outputFileNamePrefix}_bam_metrics.csv"
+  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.txt"
   }
 
   runtime {
