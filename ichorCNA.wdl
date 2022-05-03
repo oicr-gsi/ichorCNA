@@ -44,7 +44,7 @@ workflow ichorCNA {
       }
     }
 
-    call preMergeBamMetrics as preMergeMetrics{
+    call preMergeBamMetrics as preMergeBamMetricsFastqInput{
       input:
         bam = bwaMem.bwaMemBam,
         outputFileNamePrefix = outputFileNamePrefix
@@ -117,10 +117,18 @@ workflow ichorCNA {
       outputFileNamePrefix = outputFileNamePrefix
   }
 
+  call createJson {
+    input:
+      bamMetrics = getMetrics.bamMetrics,
+      preBamMetrics = select_first([preMergeBamMetrics.preMergeMetrics,preMergeBamMetricsFastqInput.preMergeMetrics]),
+      allSolsMetrics = getMetrics.all_sols_metrics,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
   output {
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
-    File jsonMetrics = getMetrics.coverageReport
+    File jsonMetrics = createJson.metricsJson
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -534,7 +542,7 @@ task getMetrics {
   >>>
 
   output {
-  File coverageReport = "~{outputFileNamePrefix}_bam_metrics.csv"
+  File bamMetrics = "~{outputFileNamePrefix}_bam_metrics.csv"
   File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
   }
 
@@ -546,6 +554,90 @@ task getMetrics {
 
   parameter_meta {
     inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  meta {
+    output_meta: {
+      coverageReport: "json file with the mean coverage for outbam."
+    }
+  }
+}
+
+task createJson {
+  input {
+    File preBamMetrics
+    File bamMetrics
+    File allSolsMetrics
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "pandas/1.4.2"
+    Int timeout = 12
+  }
+
+  command <<<
+    python3 <<CODE
+    import csv, json
+    import pandas as pd
+
+    bam_metric = pd.read_csv("~{bamMetrics}")
+    pre_metric = pd.read_csv("~{preBamMetrics}")
+    all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
+    all_sols["tumor_fraction"] = round(abs(all_sols["n_est"] - 1),3)
+    all_sols["solution"] = all_sols["init"]
+    pre_metric_dict = pre_metric.to_dict('index')
+    bam_metric_dict = bam_metric.to_dict('records')[0]
+
+    #reorganize lane sequencing data
+    lanes = []
+    for lane in pre_metric_dict:
+      lanes.append(pre_metric_dict[lane])
+
+    #find selected solution
+    selected_sol = ""
+    for index, row in all_sols.iterrows():
+      if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
+        selected_sol = row["init"]
+
+    #selecting metrics from all solutions
+    all_sols_metrics = {}
+    for index, row in all_sols.iterrows():
+      all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
+                                           "ploidy":row["phi_est"],
+                                           "loglik":row["loglik"]}
+
+    metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
+                    "total_reads": bam_metric_dict["read_count"],
+                    "lanes_sequenced": len(pre_metric_dict),
+                    "reads_per_lane":lanes,
+                    "best_solution": selected_sol,
+                    "tumor_fraction": bam_metric_dict["tumor_fraction"],
+                    "ploidy": bam_metric_dict["ploidy"],
+                    "solutions": all_sols_metrics}
+
+    with open("~{outputFileNamePrefix}.json", "w") as outfile:
+      json.dump(metrics_dict, outfile)
+
+    CODE
+  >>>
+
+  output {
+  File metricsJson = "~{outputFileNamePrefix}.json"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  parameter_meta {
+    preBamMetrics: "pre-merge bam metrics."
+    bamMetrics: "bam metrics."
+    allSolsMetrics: "metrics for all solutions"
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     jobMemory: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
