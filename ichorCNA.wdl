@@ -122,6 +122,7 @@ workflow ichorCNA {
       bamMetrics = getMetrics.bamMetrics,
       preBamMetrics = select_first([preMergeBamMetrics.preMergeMetrics,preMergeBamMetricsFastqInput.preMergeMetrics]),
       allSolsMetrics = getMetrics.all_sols_metrics,
+      plotsFile = runIchorCNA.plotsTxt,
       outputFileNamePrefix = outputFileNamePrefix
   }
 
@@ -446,6 +447,9 @@ task runIchorCNA {
 
     # compress directory of plots
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+
+    #create txt file with plot full path
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
   >>>
 
   runtime {
@@ -462,6 +466,24 @@ task runIchorCNA {
     File correctedDepth = "~{outputFileNamePrefix}.correctedDepth.txt"
     File rData = "~{outputFileNamePrefix}.RData"
     File plots = "~{outputFileNamePrefix}_plots.tar.gz"
+    File plotsTxt = "~{outputFileNamePrefix}_plots.txt"
+    File solution1 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p2.pdf"
+    File solution2 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p3.pdf"
+    File solution3 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p2.pdf"
+    File solution4 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p3.pdf"
+    File solution5 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p2.pdf"
+    File solution6 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p3.pdf"
+    File solution7 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p2.pdf"
+    File solution8 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p3.pdf"
+    File solution9 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p2.pdf"
+    File solution10 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p3.pdf"
+    File solution11 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p2.pdf"
+    File solution12 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p3.pdf"
+    File solution13 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p2.pdf"
+    File solution14 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p3.pdf"
+    File solution15 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p2.pdf"
+    File solution16 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p3.pdf"
+
   }
 
   parameter_meta {
@@ -572,6 +594,7 @@ task createJson {
     File preBamMetrics
     File bamMetrics
     File allSolsMetrics
+    File plotsFile
     String outputFileNamePrefix
     Int jobMemory = 8
     String modules = "pandas/1.4.2"
