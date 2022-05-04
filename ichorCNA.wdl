@@ -613,6 +613,8 @@ task createJson {
     all_sols["solution"] = all_sols["init"]
     pre_metric_dict = pre_metric.to_dict('index')
     bam_metric_dict = bam_metric.to_dict('records')[0]
+    with open("~{plotsFile}") as f:
+      lines = f.readlines()
 
     #reorganize lane sequencing data
     lanes = []
@@ -643,6 +645,25 @@ task createJson {
 
     with open("~{outputFileNamePrefix}.json", "w") as outfile:
       json.dump(metrics_dict, outfile)
+
+    #create json output file for annotations
+    output_list = []
+    for line in lines:
+      pdf_dict = {}
+      line = line.strip()
+      len_pdf_sol = len(line.split("_")[-1])
+      pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
+      pdf_dict["name"] = line.split("/")[-1][0:-4]
+      pdf_dict["pdf"] = {}
+      pdf_dict["pdf"]["left"] = line
+      pdf_dict["pdf"]["right"] = {}
+      pdf_dict["pdf"]["right"] = metrics_dict["solutions"][pdf_solution]
+      output_list.append(pdf_dict)
+    output_dict = {}
+    output_dict["outputs"] = output_list
+
+    with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
+        json.dump(output_dict, outPdfJson)
 
     CODE
   >>>
