@@ -8,6 +8,15 @@ struct InputGroup {
   String readGroups
 }
 
+struct Output {
+    String name
+    Pair[File,Map[String,String]] pdf
+}
+
+struct Outputs {
+    Array[Output]+ outputs
+}
+
 workflow ichorCNA {
   input {
     Array[InputGroup]? inputGroups
@@ -127,6 +136,7 @@ workflow ichorCNA {
   }
 
   output {
+    Array[Output]+ pdf = createJson.out.outputs
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
     File jsonMetrics = createJson.metricsJson
@@ -670,6 +680,7 @@ task createJson {
 
   output {
   File metricsJson = "~{outputFileNamePrefix}.json"
+  Outputs out = read_json("~{outputFileNamePrefix}_outputs.json")
   }
 
   runtime {
