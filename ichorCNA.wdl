@@ -9,7 +9,8 @@ struct InputGroup {
 }
 
 struct Output {
-    Pair[File,Map[String,String]] pdf
+  String name
+  Pair[File,Map[String,String]] pdf
 }
 
 struct Outputs {
@@ -662,7 +663,7 @@ task createJson {
       line = line.strip()
       len_pdf_sol = len(line.split("_")[-1])
       pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
-      #pdf_dict["name"] = line.split("/")[-1][0:-4]
+      pdf_dict["name"] = line.split("/")[-1][0:-4]
       pdf_dict["pdf"] = {}
       pdf_dict["pdf"]["left"] = line
       pdf_dict["pdf"]["right"] = {}
@@ -680,7 +681,6 @@ task createJson {
   output {
   File metricsJson = "~{outputFileNamePrefix}.json"
   Outputs out = read_json("~{outputFileNamePrefix}_outputs.json")
-  #Array[Pair[File,Map[String,String]]] pdfs = read_json("~{outputFileNamePrefix}_outputs.json")
   }
 
   runtime {
