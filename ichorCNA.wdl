@@ -679,7 +679,7 @@ task createJson {
   >>>
 
   output {
-  File metricsJson = "~{outputFileNamePrefix}.json"
+  File metricsJson = "~{outputFileNamePrefix}_metrics.json"
   Outputs out = read_json("~{outputFileNamePrefix}_outputs.json")
   }
 
