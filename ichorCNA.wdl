@@ -169,52 +169,72 @@ workflow ichorCNA {
       {
         name: "ichorcna/0.2",
         url: "https://shahlab.ca/projects/hmmcopy_utils/"
+      },
+      {
+        name: "python/3.9",
+        url: "python.org"
+      },
+      {
+        name: "pandas/1.4.2",
+        url: "https://pandas.pydata.org/"
       }
     ]
+    output_meta: {
+      pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
+      bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
+      bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
+      jsonMetrics: "Report on bam coverage, read counts and ichorCNA metrics.",
+      segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
+      segmentsWithSubclonalStatus: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
+      estimatedCopyNumber: "Estimated copy number, log ratio, and subclone status for each bin/window.",
+      convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
+      correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
+      rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
+      plots: "Archived directory of plots."
+    }
   }
-
 }
 
 #copy from bwaMem
 task bamMerge{
-    input {
-        Array[File] bams
-        String outputFileNamePrefix
-        Int   jobMemory = 32
-        String modules  = "samtools/1.9"
-        Int timeout     = 72
-    }
-    parameter_meta {
-        bams:  "Input bam files"
-        outputFileNamePrefix: "Prefix for output file"
-        jobMemory: "Memory allocated indexing job"
-        modules:   "Required environment modules"
-        timeout:   "Hours before task timeout"
-    }
+  input {
+    Array[File] bams
+    String outputFileNamePrefix
+    Int   jobMemory = 32
+    String modules  = "samtools/1.9"
+    Int timeout     = 72
+  }
+  parameter_meta {
+    bams:  "Input bam files"
+    outputFileNamePrefix: "Prefix for output file"
+    jobMemory: "Memory allocated indexing job"
+    modules:   "Required environment modules"
+    timeout:   "Hours before task timeout"
+  }
 
     String resultMergedBam = "~{outputFileNamePrefix}.bam"
 
     command <<<
-        set -euo pipefail
-        samtools merge \
-        -c \
-        ~{resultMergedBam} \
-        ~{sep=" " bams}
+      set -euo pipefail
+      samtools merge \
+      -c \
+      ~{resultMergedBam} \
+      ~{sep=" " bams}
     >>>
 
     runtime {
-        memory: "~{jobMemory} GB"
-        modules: "~{modules}"
-        timeout: "~{timeout}"
+      memory: "~{jobMemory} GB"
+      modules: "~{modules}"
+      timeout: "~{timeout}"
     }
 
     output {
-        File outputMergedBam = "~{resultMergedBam}"
+      File outputMergedBam = "~{resultMergedBam}"
     }
 
     meta {
         output_meta: {
-            outputMergedBam: "output merged bam aligned to genome"
+          outputMergedBam: "output merged bam aligned to genome"
         }
     }
 }
@@ -226,6 +246,14 @@ task preMergeBamMetrics {
     Int jobMemory = 8
     String modules = "samtools/1.14"
     Int timeout = 12
+  }
+
+  parameter_meta {
+    bam: "Input bam pre merge."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   command <<<
@@ -251,14 +279,6 @@ task preMergeBamMetrics {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    bam: "Input bam pre merge."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
   meta {
     output_meta: {
       preMergeMetrics: "csv file with bam metrics."
@@ -274,16 +294,18 @@ task indexBam {
     Int timeout = 12
   }
 
+  parameter_meta {
+    inputbam: "Input bam."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
   String resultBai = "~{basename(inputbam)}.bai"
 
   command <<<
   samtools index ~{inputbam} ~{resultBai}
   >>>
-
-  output {
-    File outbam = "~{inputbam}"
-    File bamIndex = "~{resultBai}"
-  }
 
   runtime {
     memory: "~{jobMemory} GB"
@@ -291,11 +313,9 @@ task indexBam {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    inputbam: "Input bam."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
+  output {
+    File outbam = "~{inputbam}"
+    File bamIndex = "~{resultBai}"
   }
 
   meta {
@@ -316,6 +336,17 @@ task runReadCounter {
     Int mem = 8
     String modules = "samtools/1.9 hmmcopy-utils/0.1.1"
     Int timeout = 12
+  }
+
+  parameter_meta {
+    bam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    windowSize: "The size of non-overlapping windows."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored."
+    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    mem: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   command <<<
@@ -347,17 +378,6 @@ task runReadCounter {
   output {
     File wig = "~{outputFileNamePrefix}.wig"
     Array[String] ichorCNAchrs = read_lines("ichorCNAchrs.txt")
-  }
-
-  parameter_meta {
-    bam: "Input bam."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    windowSize: "The size of non-overlapping windows."
-    minimumMappingQuality: "Mapping quality value below which reads are ignored."
-    chromosomesToAnalyze: "Chromosomes in the bam reference file."
-    mem: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
@@ -412,6 +432,50 @@ task runIchorCNA {
     String modules = "ichorcna/0.2"
     Int mem = 8
     Int timeout = 12
+  }
+
+  parameter_meta {
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    wig: "Tumor WIG file."
+    normalWig: "Normal WIG file. Default: [NULL]."
+    gcWig: "GC-content WIG file."
+    mapWig: "Mappability score WIG file. Default: [NULL]."
+    normalPanel: "Median corrected depth from panel of normals. Default: [NULL]."
+    exonsBed: "Bed file containing exon regions. Default: [NULL]."
+    centromere: "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package."
+    minMapScore: "Include bins with a minimum mappability score of this value. Default: [0.9]."
+    rmCentromereFlankLength: "Length of region flanking centromere to remove. Default: [1e+05]."
+    normal: "Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [0.5]"
+    scStates: "Subclonal states to consider."
+    coverage: "PICARD sequencing coverage."
+    lambda: "Initial Student's t precision; must contain 4 values (e.g. c(1500,1500,1500,1500)); if not provided then will automatically use based on variance of data."
+    lambdaScaleHyperParam: "Hyperparameter (scale) for Gamma prior on Student's-t precision. Default: [3]."
+    ploidy: "Initial tumour ploidy; can be more than one value if additional ploidy initializations are desired. Default: [2]"
+    maxCN: "Total clonal CN states."
+    estimateNormal: "Estimate normal?"
+    estimateScPrevalence: "Estimate subclonal prevalence?"
+    estimatePloidy: "Estimate tumour ploidy?"
+    maxFracCNASubclone: "Exclude solutions with fraction of subclonal events greater than this value. Default: [0.7]."
+    maxFracGenomeSubclone: "Exclude solutions with subclonal genome fraction greater than this value. Default: [0.5]."
+    minSegmentBins: "Minimum number of bins for largest segment threshold required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction."
+    altFracThreshold: "Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [0.05]."
+    chrNormalize: "Specify chromosomes to normalize GC/mappability biases. Default: [c(1:22)]."
+    chrTrain: "Specify chromosomes to estimate params. Default: [c(1:22)]."
+    chrs: "Specify chromosomes to analyze."
+    genomeBuild: "Genome build. Default: [hg19]."
+    genomeStyle: "NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have \"chr\" string. [Default: NCBI]."
+    normalizeMaleX: "If male, then normalize chrX by median. Default: [TRUE]."
+    fracReadsInChrYForMale: "Threshold for fraction of reads in chrY to assign as male. Default: [0.001]."
+    includeHOMD: "If FALSE, then exclude HOMD state. Useful when using large bins (e.g. 1Mb). Default: [FALSE]."
+    txnE: "Self-transition probability. Increase to decrease number of segments. Default: [0.9999999]"
+    txnStrength: "Transition pseudo-counts. Exponent should be the same as the number of decimal places of --txnE. Default: [1e+07]."
+    plotFileType: "File format for output plots. Default: [pdf]."
+    plotYLim: "ylim to use for chromosome plots. Default: [c(-2,2)]."
+    outDir: "Output Directory. Default: [./]."
+    libdir: "Script library path."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    mem: "Memory (in GB) to allocate to the job."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   command <<<
@@ -496,49 +560,6 @@ task runIchorCNA {
 
   }
 
-  parameter_meta {
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    wig: "Tumor WIG file."
-    normalWig: "Normal WIG file. Default: [NULL]."
-    gcWig: "GC-content WIG file."
-    mapWig: "Mappability score WIG file. Default: [NULL]."
-    normalPanel: "Median corrected depth from panel of normals. Default: [NULL]."
-    exonsBed: "Bed file containing exon regions. Default: [NULL]."
-    centromere: "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package."
-    minMapScore: "Include bins with a minimum mappability score of this value. Default: [0.9]."
-    rmCentromereFlankLength: "Length of region flanking centromere to remove. Default: [1e+05]."
-    normal: "Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [0.5]"
-    scStates: "Subclonal states to consider."
-    coverage: "PICARD sequencing coverage."
-    lambda: "Initial Student's t precision; must contain 4 values (e.g. c(1500,1500,1500,1500)); if not provided then will automatically use based on variance of data."
-    lambdaScaleHyperParam: "Hyperparameter (scale) for Gamma prior on Student's-t precision. Default: [3]."
-    ploidy: "Initial tumour ploidy; can be more than one value if additional ploidy initializations are desired. Default: [2]"
-    maxCN: "Total clonal CN states."
-    estimateNormal: "Estimate normal?"
-    estimateScPrevalence: "Estimate subclonal prevalence?"
-    estimatePloidy: "Estimate tumour ploidy?"
-    maxFracCNASubclone: "Exclude solutions with fraction of subclonal events greater than this value. Default: [0.7]."
-    maxFracGenomeSubclone: "Exclude solutions with subclonal genome fraction greater than this value. Default: [0.5]."
-    minSegmentBins: "Minimum number of bins for largest segment threshold required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction."
-    altFracThreshold: "Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [0.05]."
-    chrNormalize: "Specify chromosomes to normalize GC/mappability biases. Default: [c(1:22)]."
-    chrTrain: "Specify chromosomes to estimate params. Default: [c(1:22)]."
-    chrs: "Specify chromosomes to analyze."
-    genomeBuild: "Genome build. Default: [hg19]."
-    genomeStyle: "NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have \"chr\" string. [Default: NCBI]."
-    normalizeMaleX: "If male, then normalize chrX by median. Default: [TRUE]."
-    fracReadsInChrYForMale: "Threshold for fraction of reads in chrY to assign as male. Default: [0.001]."
-    includeHOMD: "If FALSE, then exclude HOMD state. Useful when using large bins (e.g. 1Mb). Default: [FALSE]."
-    txnE: "Self-transition probability. Increase to decrease number of segments. Default: [0.9999999]"
-    txnStrength: "Transition pseudo-counts. Exponent should be the same as the number of decimal places of --txnE. Default: [1e+07]."
-    plotFileType: "File format for output plots. Default: [pdf]."
-    plotYLim: "ylim to use for chromosome plots. Default: [c(-2,2)]."
-    outDir: "Output Directory. Default: [./]."
-    libdir: "Script library path."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    mem: "Memory (in GB) to allocate to the job."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
 
   meta {
     output_meta: {
@@ -548,7 +569,9 @@ task runIchorCNA {
       convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
-      plots: "Archived directory of plots."
+      plots: "Archived directory of plots.",
+      plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
+      solution1-16: "Plots for each of the different solutions."
     }
   }
 }
@@ -561,6 +584,14 @@ task getMetrics {
     Int jobMemory = 8
     String modules = "samtools/1.14"
     Int timeout = 12
+  }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   command <<<
@@ -584,17 +615,10 @@ task getMetrics {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    inputbam: "Input bam."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
   meta {
     output_meta: {
-      coverageReport: "json file with the mean coverage for outbam."
+      bamMetrics: "Metrics collected from bam file used for ichorCNA, to be used as input for final json metrics collection (createJson task).",
+      all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
     }
   }
 }
@@ -611,10 +635,22 @@ task createJson {
     Int timeout = 12
   }
 
+  parameter_meta {
+    preBamMetrics: "pre-merge bam metrics."
+    bamMetrics: "bam metrics."
+    allSolsMetrics: "metrics for all solutions"
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
   command <<<
     python3 <<CODE
     import csv, json
     import pandas as pd
+
+    ### create json file with all metrics
 
     bam_metric = pd.read_csv("~{bamMetrics}")
     pre_metric = pd.read_csv("~{preBamMetrics}")
@@ -653,10 +689,10 @@ task createJson {
                     "ploidy": bam_metric_dict["ploidy"],
                     "solutions": all_sols_metrics}
 
-    with open("~{outputFileNamePrefix}.json", "w") as outfile:
+    with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
       json.dump(metrics_dict, outfile)
 
-    #create json output file for annotations
+    ### create json output file for annotations
     output_list = []
     for line in lines:
       pdf_dict = {}
@@ -689,19 +725,10 @@ task createJson {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    preBamMetrics: "pre-merge bam metrics."
-    bamMetrics: "bam metrics."
-    allSolsMetrics: "metrics for all solutions"
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
   meta {
     output_meta: {
-      coverageReport: "json file with the mean coverage for outbam."
+      metricsJson: "json file reporting mean coverage, total reads, lanes sequenced, reads per lane as well as ichorCNA reported ploidy, tumor_fraction for selected and all reported solutions.",
+      out: "Annotated output."
     }
   }
 }
