@@ -571,7 +571,7 @@ task runIchorCNA {
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
       plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
-      solution1-16: "Plots for each of the different solutions."
+      solution1: "solution 1-16, plots for each of the different solutions."
     }
   }
 }
