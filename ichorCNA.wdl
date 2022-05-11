@@ -8,13 +8,8 @@ struct InputGroup {
   String readGroups
 }
 
-struct Output {
-  String name
-  Pair[File,Map[String,String]] pdf
-}
-
-struct Outputs {
-    Array[Output]+ outputs
+struct PdfOutput {
+  Array[Pair[File,Map[String,String]]]+ pdfs
 }
 
 workflow ichorCNA {
@@ -136,7 +131,7 @@ workflow ichorCNA {
   }
 
   output {
-    Array[Output]+ pdf = createJson.out.outputs
+    Array[Pair[File,Map[String,String]]]+ pdfs = createJson.pdfOutput.pdfs
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
     File jsonMetrics = createJson.metricsJson
@@ -699,14 +694,12 @@ task createJson {
       line = line.strip()
       len_pdf_sol = len(line.split("_")[-1])
       pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
-      pdf_dict["name"] = line.split("/")[-1][0:-4]
-      pdf_dict["pdf"] = {}
-      pdf_dict["pdf"]["left"] = line
-      pdf_dict["pdf"]["right"] = {}
-      pdf_dict["pdf"]["right"] = metrics_dict["solutions"][pdf_solution]
+      pdf_dict["left"] = line
+      pdf_dict["right"] = {}
+      pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
       output_list.append(pdf_dict)
     output_dict = {}
-    output_dict["outputs"] = output_list
+    output_dict["pdfs"] = output_list
 
     with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
         json.dump(output_dict, outPdfJson)
@@ -715,8 +708,8 @@ task createJson {
   >>>
 
   output {
-  File metricsJson = "~{outputFileNamePrefix}_metrics.json"
-  Outputs out = read_json("~{outputFileNamePrefix}_outputs.json")
+    File metricsJson = "~{outputFileNamePrefix}_metrics.json"
+    PdfOutput pdfOutput = read_json("~{outputFileNamePrefix}_outputs.json")
   }
 
   runtime {
