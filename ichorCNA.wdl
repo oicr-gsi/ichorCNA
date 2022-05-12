@@ -650,7 +650,7 @@ task createJson {
     bam_metric = pd.read_csv("~{bamMetrics}")
     pre_metric = pd.read_csv("~{preBamMetrics}")
     all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
-    all_sols["tumor_fraction"] = round(abs(all_sols["n_est"] - 1),3)
+    all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
     all_sols["solution"] = all_sols["init"]
     pre_metric_dict = pre_metric.to_dict('index')
     bam_metric_dict = bam_metric.to_dict('records')[0]
