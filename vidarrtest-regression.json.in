@@ -40,9 +40,12 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
-      "ichorCNA.calculateCoverage.jobMemory": null,
-      "ichorCNA.calculateCoverage.modules": null,
-      "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.createJson.jobMemory": null,
+      "ichorCNA.createJson.modules": null,
+      "ichorCNA.createJson.timeout": null,
+      "ichorCNA.getMetrics.jobMemory": null,
+      "ichorCNA.getMetrics.modules": null,
+      "ichorCNA.getMetrics.timeout": null,
       "ichorCNA.indexBam.jobMemory": null,
       "ichorCNA.indexBam.modules": null,
       "ichorCNA.indexBam.timeout": null,
@@ -82,6 +85,14 @@
       "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL49_0083_Ov_P_PE_321_WG",
+      "ichorCNA.preMergeBamMetrics.bam": null,
+      "ichorCNA.preMergeBamMetrics.outputFileNamePrefix": null,
+      "ichorCNA.preMergeBamMetrics.jobMemory": null,
+      "ichorCNA.preMergeBamMetrics.modules": null,
+      "ichorCNA.preMergeBamMetrics.timeout": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.jobMemory": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.modules": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.timeout": null,
       "ichorCNA.provisionBam": false,
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
@@ -179,6 +190,22 @@
         ],
         "type": "ALL"
       },
+      "ichorCNA.jsonMetrics": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.pdfs": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
       "ichorCNA.plots": {
         "contents": [
           {
@@ -262,9 +289,12 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
-      "ichorCNA.calculateCoverage.jobMemory": null,
-      "ichorCNA.calculateCoverage.modules": null,
-      "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.createJson.jobMemory": null,
+      "ichorCNA.createJson.modules": null,
+      "ichorCNA.createJson.timeout": null,
+      "ichorCNA.getMetrics.jobMemory": null,
+      "ichorCNA.getMetrics.modules": null,
+      "ichorCNA.getMetrics.timeout": null,
       "ichorCNA.indexBam.jobMemory": null,
       "ichorCNA.indexBam.modules": null,
       "ichorCNA.indexBam.timeout": null,
@@ -331,6 +361,14 @@
       "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL49_0111_Cf_U_PE_330_WG",
+      "ichorCNA.preMergeBamMetrics.bam": null,
+      "ichorCNA.preMergeBamMetrics.outputFileNamePrefix": null,
+      "ichorCNA.preMergeBamMetrics.jobMemory": null,
+      "ichorCNA.preMergeBamMetrics.modules": null,
+      "ichorCNA.preMergeBamMetrics.timeout": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.jobMemory": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.modules": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.timeout": null,
       "ichorCNA.provisionBam": true,
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
@@ -428,6 +466,22 @@
         ],
         "type": "ALL"
       },
+      "ichorCNA.jsonMetrics": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.pdfs": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
       "ichorCNA.plots": {
         "contents": [
           {
@@ -511,9 +565,12 @@
       "ichorCNA.bwaMem.trimMinLength": null,
       "ichorCNA.bwaMem.trimMinQuality": null,
       "ichorCNA.chromosomesToAnalyze": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
-      "ichorCNA.calculateCoverage.jobMemory": null,
-      "ichorCNA.calculateCoverage.modules": null,
-      "ichorCNA.calculateCoverage.timeout": null,
+      "ichorCNA.createJson.jobMemory": null,
+      "ichorCNA.createJson.modules": null,
+      "ichorCNA.createJson.timeout": null,
+      "ichorCNA.getMetrics.jobMemory": null,
+      "ichorCNA.getMetrics.modules": null,
+      "ichorCNA.getMetrics.timeout": null,
       "ichorCNA.indexBam.jobMemory": null,
       "ichorCNA.indexBam.modules": null,
       "ichorCNA.indexBam.timeout": null,
@@ -538,6 +595,14 @@
       "ichorCNA.inputType":"bam",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL48_0001_Ct_T_PE_312_WG",
+      "ichorCNA.preMergeBamMetrics.jobMemory": null,
+      "ichorCNA.preMergeBamMetrics.modules": null,
+      "ichorCNA.preMergeBamMetrics.timeout": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.bam": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.outputFileNamePrefix": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.jobMemory": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.modules": null,
+      "ichorCNA.preMergeBamMetricsFastqInput.timeout": null,
       "ichorCNA.provisionBam": false,
       "ichorCNA.runIchorCNA.altFracThreshold": null,
       "ichorCNA.runIchorCNA.centromere": "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
@@ -628,6 +693,22 @@
         "type": "ALL"
       },
       "ichorCNA.estimatedCopyNumber": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.jsonMetrics": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.pdfs": {
         "contents": [
           {
             "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
