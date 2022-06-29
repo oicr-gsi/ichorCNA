@@ -592,7 +592,7 @@ task getMetrics {
   command <<<
   echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
   coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
-  read_count=$(samtools view -c ~{inputbam})
+  read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
   tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
