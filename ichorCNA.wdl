@@ -145,8 +145,8 @@ workflow ichorCNA {
   }
 
   meta {
-    author: "Michael Laszloffy"
-    email: "michael.laszloffy@oicr.on.ca"
+    author: "Beatriz Lujan Toro"
+    email: "beatriz.lujantoro@oicr.on.ca"
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS"
     dependencies: [
       {
