@@ -237,6 +237,134 @@
           }
         ],
         "type": "ALL"
+      },
+      "ichorCNA.solution1": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution2": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution3": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution4": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution5": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution6": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution7": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution8": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution9": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution10": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution11": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution12": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution13": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution14": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution15": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution16": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
       }
     },
     "validators": [
@@ -513,6 +641,134 @@
           }
         ],
         "type": "ALL"
+      },
+      "ichorCNA.solution1": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution2": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution3": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution4": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution5": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution6": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution7": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution8": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution9": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution10": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution11": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution12": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution13": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution14": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution15": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution16": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0111_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
       }
     },
     "validators": [
@@ -741,6 +997,134 @@
         "type": "ALL"
       },
       "ichorCNA.segmentsWithSubclonalStatus": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution1": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution2": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution3": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution4": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution5": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution6": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution7": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution8": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution9": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution10": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution11": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution12": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution13": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution14": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution15": {
+        "contents": [
+          {
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+          }
+        ],
+        "type": "ALL"
+      },
+      "ichorCNA.solution16": {
         "contents": [
           {
             "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
