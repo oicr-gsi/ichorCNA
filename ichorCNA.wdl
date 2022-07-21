@@ -200,7 +200,24 @@ workflow ichorCNA {
       convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
-      plots: "Archived directory of plots."
+      plots: "Archived directory of plots.",
+      solution1: "Plots for solution 1.",
+      solution2: "Plots for solution 2.",
+      solution3: "Plots for solution 3.",
+      solution4: "Plots for solution 4.",
+      solution5: "Plots for solution 5.",
+      solution6: "Plots for solution 6.",
+      solution7: "Plots for solution 7.",
+      solution8: "Plots for solution 8.",
+      solution9: "Plots for solution 9.",
+      solution10: "Plots for solution 10.",
+      solution11: "Plots for solution 11.",
+      solution12: "Plots for solution 12.",
+      solution13: "Plots for solution 13.",
+      solution14: "Plots for solution 14.",
+      solution15: "Plots for solution 15.",
+      solution16: "Plots for solution 16."
+
     }
   }
 }
@@ -581,7 +598,22 @@ task runIchorCNA {
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
       plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
-      solution1: "solution 1-16, plots for each of the different solutions."
+      solution1: "Plots for solution 1.",
+      solution2: "Plots for solution 2.",
+      solution3: "Plots for solution 3.",
+      solution4: "Plots for solution 4.",
+      solution5: "Plots for solution 5.",
+      solution6: "Plots for solution 6.",
+      solution7: "Plots for solution 7.",
+      solution8: "Plots for solution 8.",
+      solution9: "Plots for solution 9.",
+      solution10: "Plots for solution 10.",
+      solution11: "Plots for solution 11.",
+      solution12: "Plots for solution 12.",
+      solution13: "Plots for solution 13.",
+      solution14: "Plots for solution 14.",
+      solution15: "Plots for solution 15.",
+      solution16: "Plots for solution 16."
     }
   }
 }
