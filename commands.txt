@@ -6,12 +6,21 @@ This section lists command(s) run by ichorCNA workflow
 IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
 
 MERGE BAMS
- ```
-samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
- ```
-CALCULATE COVERAGE
 ```
-samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+ samtools merge \
+ -c \
+ ~{resultMergedBam} \
+ ~{sep=" " bams}
+```
+COLLECT PRE-MERGE BAM METRICS
+```
+echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+for file in ~{sep=' ' bam}
+do
+  run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+  read_count=$(samtools view -c "${file}")
+  echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+done;
 ```
 INDEX BAM
 ```
@@ -79,4 +88,83 @@ RUN ICHORCNA
 
     # compress directory of plots
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+
+    #create txt file with plot full path
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
  ```
+ COLLECT FINAL BAM AND ICHORCNA METRICS
+ ```
+ echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+ coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+ read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
+ tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+ ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+ echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+ cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+ ```
+CREATE JSON WITH METRICS COLLECTED
+```
+python3 <<CODE
+import csv, json
+import pandas as pd
+
+### create json file with all metrics
+bam_metric = pd.read_csv("~{bamMetrics}")
+pre_metric = pd.read_csv("~{preBamMetrics}")
+all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
+all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
+all_sols["solution"] = all_sols["init"]
+pre_metric_dict = pre_metric.to_dict('index')
+bam_metric_dict = bam_metric.to_dict('records')[0]
+with open("~{plotsFile}") as f:
+  lines = f.readlines()
+
+#reorganize lane sequencing data
+lanes = []
+for lane in pre_metric_dict:
+  lanes.append(pre_metric_dict[lane])
+
+#find selected solution
+selected_sol = ""
+for index, row in all_sols.iterrows():
+  if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
+    selected_sol = row["init"]
+
+#selecting metrics from all solutions
+all_sols_metrics = {}
+for index, row in all_sols.iterrows():
+  all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
+                                       "ploidy":row["phi_est"],
+                                       "loglik":row["loglik"]}
+
+metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
+                "total_reads": bam_metric_dict["read_count"],
+                "lanes_sequenced": len(pre_metric_dict),
+                "reads_per_lane":lanes,
+                "best_solution": selected_sol,
+                "tumor_fraction": bam_metric_dict["tumor_fraction"],
+                "ploidy": bam_metric_dict["ploidy"],
+                "solutions": all_sols_metrics}
+
+with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
+  json.dump(metrics_dict, outfile)
+
+### create json output file for annotations
+output_list = []
+for line in lines:
+  pdf_dict = {}
+  line = line.strip()
+  len_pdf_sol = len(line.split("_")[-1])
+  pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
+  pdf_dict["left"] = line
+  pdf_dict["right"] = {}
+  pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
+  output_list.append(pdf_dict)
+output_dict = {}
+output_dict["pdfs"] = output_list
+
+with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
+    json.dump(output_dict, outPdfJson)
+
+CODE
+```
