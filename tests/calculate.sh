@@ -13,8 +13,8 @@ cat *.cna.seg | cut -f 1-8 | md5sum
 #3. check on params.txt, from which ploidy and purity values are taken : cat id.params.txt | cut -f1-5 | md5sum
 cat *.params.txt | cut -f 1-5 | md5sum
 
-#4. check metrics json
-cat *_metrics.json | md5sum
+#4. check metrics json, ignore loglik
+cat *_metrics.json | tr , '\n' | grep -v loglik | md5sum
 
 #5. check size of RData binary file
 find . -iname "*.RData" -size +0 -printf '%p found and non-zero file size\n'
