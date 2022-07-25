@@ -284,7 +284,7 @@ task preMergeBamMetrics {
   }
 
   command <<<
-  set -exo pipefail
+  set -euo pipefail
 
   echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   for file in ~{sep=' ' bam}
@@ -377,7 +377,7 @@ task runReadCounter {
   }
 
   command <<<
-    set -euxo pipefail
+    set -euo pipefail
 
     samtools index ~{bam}
 
@@ -506,6 +506,8 @@ task runIchorCNA {
   }
 
   command <<<
+    set -euo pipefail
+
     runIchorCNA \
     --WIG ~{wig} \
     ~{"--NORMWIG " + normalWig} \
@@ -637,6 +639,8 @@ task getMetrics {
   }
 
   command <<<
+  set -euo pipefail
+
   echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
   coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
   read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
@@ -688,6 +692,8 @@ task createJson {
   }
 
   command <<<
+    set -euo pipefail
+
     python3 <<CODE
     import csv, json
     import pandas as pd
