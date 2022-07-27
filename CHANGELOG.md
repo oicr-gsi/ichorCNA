@@ -1,4 +1,4 @@
-## 1.1.0 - 2022-07-22
+## 1.1.0 - 2022-07-27
 - Collect additional metrics
 - Output metrics in json file
 - Output all plots with annotations
