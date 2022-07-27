@@ -8,6 +8,10 @@ struct InputGroup {
   String readGroups
 }
 
+struct PdfOutput {
+  Array[Pair[File,Map[String,String]]]+ pdfs
+}
+
 workflow ichorCNA {
   input {
     Array[InputGroup]? inputGroups
@@ -44,21 +48,36 @@ workflow ichorCNA {
       }
     }
 
+    call preMergeBamMetrics as preMergeBamMetricsFastqInput{
+      input:
+        bam = bwaMem.bwaMemBam,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+
     if (length(inputGroups_) > 1 ) {
       call bamMerge {
         input:
           bams = bwaMem.bwaMemBam,
           outputFileNamePrefix = outputFileNamePrefix
       }
+      #get reads of each input file
     }
 
     if (length(inputGroups_) == 1 ) {
       File bwaMemBam = bwaMem.bwaMemBam[0]
     }
+
   }
 
   if(inputType=="bam" && defined(inputBam)){
     Array[File] inputBam_ = select_first([inputBam,[]])
+
+    call preMergeBamMetrics {
+      input:
+        bam = inputBam_,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+
     if (length(inputBam_) > 1 ) {
       call bamMerge as inputBamMerge {
         input:
@@ -70,12 +89,6 @@ workflow ichorCNA {
     if (length(inputBam_) == 1 ) {
       File singleInputBam = inputBam_[0]
     }
-  }
-
-  call calculateCoverage {
-    input:
-      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
-      outputFileNamePrefix = outputFileNamePrefix
   }
 
   if(provisionBam==true){
@@ -101,10 +114,42 @@ workflow ichorCNA {
       wig=runReadCounter.wig
   }
 
+  call getMetrics {
+    input:
+      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      params = runIchorCNA.convergedParameters,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
+  call createJson {
+    input:
+      bamMetrics = getMetrics.bamMetrics,
+      preBamMetrics = select_first([preMergeBamMetrics.preMergeMetrics,preMergeBamMetricsFastqInput.preMergeMetrics]),
+      allSolsMetrics = getMetrics.all_sols_metrics,
+      plotsFile = runIchorCNA.plotsTxt,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
   output {
+    Pair[File,Map[String,String]] solution1 = createJson.pdfOutput.pdfs[0]
+    Pair[File,Map[String,String]] solution2 = createJson.pdfOutput.pdfs[1]
+    Pair[File,Map[String,String]] solution3 = createJson.pdfOutput.pdfs[2]
+    Pair[File,Map[String,String]] solution4 = createJson.pdfOutput.pdfs[3]
+    Pair[File,Map[String,String]] solution5 = createJson.pdfOutput.pdfs[4]
+    Pair[File,Map[String,String]] solution6 = createJson.pdfOutput.pdfs[5]
+    Pair[File,Map[String,String]] solution7 = createJson.pdfOutput.pdfs[6]
+    Pair[File,Map[String,String]] solution8 = createJson.pdfOutput.pdfs[7]
+    Pair[File,Map[String,String]] solution9 = createJson.pdfOutput.pdfs[8]
+    Pair[File,Map[String,String]] solution10 = createJson.pdfOutput.pdfs[9]
+    Pair[File,Map[String,String]] solution11 = createJson.pdfOutput.pdfs[10]
+    Pair[File,Map[String,String]] solution12 = createJson.pdfOutput.pdfs[11]
+    Pair[File,Map[String,String]] solution13 = createJson.pdfOutput.pdfs[12]
+    Pair[File,Map[String,String]] solution14 = createJson.pdfOutput.pdfs[13]
+    Pair[File,Map[String,String]] solution15 = createJson.pdfOutput.pdfs[14]
+    Pair[File,Map[String,String]] solution16 = createJson.pdfOutput.pdfs[15]
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
-    File coverageReport = calculateCoverage.coverageReport
+    File jsonMetrics = createJson.metricsJson
     File segments = runIchorCNA.segments
     File segmentsWithSubclonalStatus = runIchorCNA.segmentsWithSubclonalStatus
     File estimatedCopyNumber = runIchorCNA.estimatedCopyNumber
@@ -115,8 +160,8 @@ workflow ichorCNA {
   }
 
   meta {
-    author: "Michael Laszloffy"
-    email: "michael.laszloffy@oicr.on.ca"
+    author: "Beatriz Lujan Toro"
+    email: "beatriz.lujantoro@oicr.on.ca"
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS"
     dependencies: [
       {
@@ -134,71 +179,125 @@ workflow ichorCNA {
       {
         name: "ichorcna/0.2",
         url: "https://shahlab.ca/projects/hmmcopy_utils/"
+      },
+      {
+        name: "python/3.9",
+        url: "python.org"
+      },
+      {
+        name: "pandas/1.4.2",
+        url: "https://pandas.pydata.org/"
       }
     ]
-  }
+    output_meta: {
+      pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
+      bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
+      bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
+      jsonMetrics: "Report on bam coverage, read counts and ichorCNA metrics.",
+      segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
+      segmentsWithSubclonalStatus: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
+      estimatedCopyNumber: "Estimated copy number, log ratio, and subclone status for each bin/window.",
+      convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
+      correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
+      rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
+      plots: "Archived directory of plots.",
+      solution1: "Plots for solution 1.",
+      solution2: "Plots for solution 2.",
+      solution3: "Plots for solution 3.",
+      solution4: "Plots for solution 4.",
+      solution5: "Plots for solution 5.",
+      solution6: "Plots for solution 6.",
+      solution7: "Plots for solution 7.",
+      solution8: "Plots for solution 8.",
+      solution9: "Plots for solution 9.",
+      solution10: "Plots for solution 10.",
+      solution11: "Plots for solution 11.",
+      solution12: "Plots for solution 12.",
+      solution13: "Plots for solution 13.",
+      solution14: "Plots for solution 14.",
+      solution15: "Plots for solution 15.",
+      solution16: "Plots for solution 16."
 
+    }
+  }
 }
 
 #copy from bwaMem
 task bamMerge{
-    input {
-        Array[File] bams
-        String outputFileNamePrefix
-        Int   jobMemory = 32
-        String modules  = "samtools/1.9"
-        Int timeout     = 72
-    }
-    parameter_meta {
-        bams:  "Input bam files"
-        outputFileNamePrefix: "Prefix for output file"
-        jobMemory: "Memory allocated indexing job"
-        modules:   "Required environment modules"
-        timeout:   "Hours before task timeout"
-    }
+  input {
+    Array[File] bams
+    String outputFileNamePrefix
+    Int   jobMemory = 32
+    String modules  = "samtools/1.9"
+    Int timeout     = 72
+  }
+  parameter_meta {
+    bams:  "Input bam files"
+    outputFileNamePrefix: "Prefix for output file"
+    jobMemory: "Memory allocated indexing job"
+    modules:   "Required environment modules"
+    timeout:   "Hours before task timeout"
+  }
 
     String resultMergedBam = "~{outputFileNamePrefix}.bam"
 
     command <<<
-        set -euo pipefail
-        samtools merge \
-        -c \
-        ~{resultMergedBam} \
-        ~{sep=" " bams}
+      set -euo pipefail
+      samtools merge \
+      -c \
+      ~{resultMergedBam} \
+      ~{sep=" " bams}
     >>>
 
     runtime {
-        memory: "~{jobMemory} GB"
-        modules: "~{modules}"
-        timeout: "~{timeout}"
+      memory: "~{jobMemory} GB"
+      modules: "~{modules}"
+      timeout: "~{timeout}"
     }
 
     output {
-        File outputMergedBam = "~{resultMergedBam}"
+      File outputMergedBam = "~{resultMergedBam}"
     }
 
     meta {
         output_meta: {
-            outputMergedBam: "output merged bam aligned to genome"
+          outputMergedBam: "output merged bam aligned to genome"
         }
     }
 }
 
-task calculateCoverage {
+task preMergeBamMetrics {
   input {
-    File inputbam
+    Array[File] bam
     String outputFileNamePrefix
     Int jobMemory = 8
     String modules = "samtools/1.14"
     Int timeout = 12
   }
 
+  parameter_meta {
+    bam: "Input bam pre merge."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
   command <<<
-  samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  set -euo pipefail
+
+  echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  for file in ~{sep=' ' bam}
+  do
+    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+    read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
+    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  done;
+
   >>>
 
   output {
-  File coverageReport = "~{outputFileNamePrefix}_coverage.json"
+  File preMergeMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
   }
 
   runtime {
@@ -207,17 +306,9 @@ task calculateCoverage {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    inputbam: "Input bam."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
   meta {
     output_meta: {
-      coverageReport: "json file with the mean coverage for outbam."
+      preMergeMetrics: "csv file with bam metrics."
     }
   }
 }
@@ -230,16 +321,18 @@ task indexBam {
     Int timeout = 12
   }
 
+  parameter_meta {
+    inputbam: "Input bam."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
   String resultBai = "~{basename(inputbam)}.bai"
 
   command <<<
   samtools index ~{inputbam} ~{resultBai}
   >>>
-
-  output {
-    File outbam = "~{inputbam}"
-    File bamIndex = "~{resultBai}"
-  }
 
   runtime {
     memory: "~{jobMemory} GB"
@@ -247,11 +340,9 @@ task indexBam {
     timeout: "~{timeout}"
   }
 
-  parameter_meta {
-    inputbam: "Input bam."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
+  output {
+    File outbam = "~{inputbam}"
+    File bamIndex = "~{resultBai}"
   }
 
   meta {
@@ -274,8 +365,19 @@ task runReadCounter {
     Int timeout = 12
   }
 
+  parameter_meta {
+    bam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    windowSize: "The size of non-overlapping windows."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored."
+    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    mem: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
   command <<<
-    set -euxo pipefail
+    set -euo pipefail
 
     samtools index ~{bam}
 
@@ -303,17 +405,6 @@ task runReadCounter {
   output {
     File wig = "~{outputFileNamePrefix}.wig"
     Array[String] ichorCNAchrs = read_lines("ichorCNAchrs.txt")
-  }
-
-  parameter_meta {
-    bam: "Input bam."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    windowSize: "The size of non-overlapping windows."
-    minimumMappingQuality: "Mapping quality value below which reads are ignored."
-    chromosomesToAnalyze: "Chromosomes in the bam reference file."
-    mem: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
   meta {
@@ -370,67 +461,6 @@ task runIchorCNA {
     Int timeout = 12
   }
 
-  command <<<
-    runIchorCNA \
-    --WIG ~{wig} \
-    ~{"--NORMWIG " + normalWig} \
-    --gcWig ~{gcWig} \
-    ~{"--mapWig " + mapWig} \
-    ~{"--normalPanel " + normalPanel} \
-    ~{"--exons.bed " + exonsBed} \
-    --id ~{outputFileNamePrefix} \
-    ~{"--centromere " + centromere} \
-    ~{"--minMapScore " + minMapScore} \
-    ~{"--rmCentromereFlankLength " + rmCentromereFlankLength} \
-    ~{"--normal " + normal} \
-    ~{"--scStates " + scStates} \
-    ~{"--coverage " + coverage} \
-    ~{"--lambda " + lambda} \
-    ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
-    ~{"--ploidy " + ploidy} \
-    ~{"--maxCN " + maxCN} \
-    ~{true="--estimateNormal True" false="--estimateNormal False" estimateNormal} \
-    ~{true="--estimateScPrevalence True" false="--estimateScPrevalence  False" estimateScPrevalence} \
-    ~{true="--estimatePloidy True" false="--estimatePloidy False" estimatePloidy} \
-    ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
-    ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
-    ~{"--minSegmentBins " + minSegmentBins} \
-    ~{"--altFracThreshold " + altFracThreshold} \
-    ~{"--chrNormalize " + chrNormalize} \
-    ~{"--chrTrain " + chrTrain} \
-    --chrs "c(~{sep="," chrs})" \
-    ~{"--genomeBuild " + genomeBuild} \
-    ~{"--genomeStyle " + genomeStyle} \
-    ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
-    ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
-    ~{true="--includeHOMD True" false="--includeHOMD False" includeHOMD} \
-    ~{"--txnE " + txnE} \
-    ~{"--txnStrength " + txnStrength} \
-    ~{"--plotFileType " + plotFileType} \
-    ~{"--plotYLim " + plotYLim} \
-    ~{"--libdir " + libdir} \
-    --outDir ~{outDir}
-
-    # compress directory of plots
-    tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
-  >>>
-
-  runtime {
-    memory: "~{mem} GB"
-    modules: "~{modules}"
-    timeout: "~{timeout}"
-  }
-
-  output {
-    File segments = "~{outputFileNamePrefix}.seg"
-    File segmentsWithSubclonalStatus = "~{outputFileNamePrefix}.seg.txt"
-    File estimatedCopyNumber = "~{outputFileNamePrefix}.cna.seg"
-    File convergedParameters = "~{outputFileNamePrefix}.params.txt"
-    File correctedDepth = "~{outputFileNamePrefix}.correctedDepth.txt"
-    File rData = "~{outputFileNamePrefix}.RData"
-    File plots = "~{outputFileNamePrefix}_plots.tar.gz"
-  }
-
   parameter_meta {
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     wig: "Tumor WIG file."
@@ -475,6 +505,91 @@ task runIchorCNA {
     timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
+  command <<<
+    set -euo pipefail
+
+    runIchorCNA \
+    --WIG ~{wig} \
+    ~{"--NORMWIG " + normalWig} \
+    --gcWig ~{gcWig} \
+    ~{"--mapWig " + mapWig} \
+    ~{"--normalPanel " + normalPanel} \
+    ~{"--exons.bed " + exonsBed} \
+    --id ~{outputFileNamePrefix} \
+    ~{"--centromere " + centromere} \
+    ~{"--minMapScore " + minMapScore} \
+    ~{"--rmCentromereFlankLength " + rmCentromereFlankLength} \
+    ~{"--normal " + normal} \
+    ~{"--scStates " + scStates} \
+    ~{"--coverage " + coverage} \
+    ~{"--lambda " + lambda} \
+    ~{"--lambdaScaleHyperParam " + lambdaScaleHyperParam} \
+    ~{"--ploidy " + ploidy} \
+    ~{"--maxCN " + maxCN} \
+    ~{true="--estimateNormal True" false="--estimateNormal False" estimateNormal} \
+    ~{true="--estimateScPrevalence True" false="--estimateScPrevalence  False" estimateScPrevalence} \
+    ~{true="--estimatePloidy True" false="--estimatePloidy False" estimatePloidy} \
+    ~{"--maxFracCNASubclone " + maxFracCNASubclone} \
+    ~{"--maxFracGenomeSubclone " + maxFracGenomeSubclone} \
+    ~{"--minSegmentBins " + minSegmentBins} \
+    ~{"--altFracThreshold " + altFracThreshold} \
+    ~{"--chrNormalize " + chrNormalize} \
+    ~{"--chrTrain " + chrTrain} \
+    --chrs "c(~{sep="," chrs})" \
+    ~{"--genomeBuild " + genomeBuild} \
+    ~{"--genomeStyle " + genomeStyle} \
+    ~{true="--normalizeMaleX True" false="--normalizeMaleX False" normalizeMaleX} \
+    ~{"--fracReadsInChrYForMale " + fracReadsInChrYForMale} \
+    ~{true="--includeHOMD True" false="--includeHOMD False" includeHOMD} \
+    ~{"--txnE " + txnE} \
+    ~{"--txnStrength " + txnStrength} \
+    ~{"--plotFileType " + plotFileType} \
+    ~{"--plotYLim " + plotYLim} \
+    ~{"--libdir " + libdir} \
+    --outDir ~{outDir}
+
+    # compress directory of plots
+    tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+
+    #create txt file with plot full path
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
+  >>>
+
+  runtime {
+    memory: "~{mem} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  output {
+    File segments = "~{outputFileNamePrefix}.seg"
+    File segmentsWithSubclonalStatus = "~{outputFileNamePrefix}.seg.txt"
+    File estimatedCopyNumber = "~{outputFileNamePrefix}.cna.seg"
+    File convergedParameters = "~{outputFileNamePrefix}.params.txt"
+    File correctedDepth = "~{outputFileNamePrefix}.correctedDepth.txt"
+    File rData = "~{outputFileNamePrefix}.RData"
+    File plots = "~{outputFileNamePrefix}_plots.tar.gz"
+    File plotsTxt = "~{outputFileNamePrefix}_plots.txt"
+    File solution1 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p2.pdf"
+    File solution2 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p3.pdf"
+    File solution3 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p2.pdf"
+    File solution4 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p3.pdf"
+    File solution5 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p2.pdf"
+    File solution6 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p3.pdf"
+    File solution7 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p2.pdf"
+    File solution8 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p3.pdf"
+    File solution9 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p2.pdf"
+    File solution10 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p3.pdf"
+    File solution11 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p2.pdf"
+    File solution12 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p3.pdf"
+    File solution13 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p2.pdf"
+    File solution14 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p3.pdf"
+    File solution15 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p2.pdf"
+    File solution16 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p3.pdf"
+
+  }
+
+
   meta {
     output_meta: {
       segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
@@ -483,7 +598,183 @@ task runIchorCNA {
       convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
-      plots: "Archived directory of plots."
+      plots: "Archived directory of plots.",
+      plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
+      solution1: "Plots for solution 1.",
+      solution2: "Plots for solution 2.",
+      solution3: "Plots for solution 3.",
+      solution4: "Plots for solution 4.",
+      solution5: "Plots for solution 5.",
+      solution6: "Plots for solution 6.",
+      solution7: "Plots for solution 7.",
+      solution8: "Plots for solution 8.",
+      solution9: "Plots for solution 9.",
+      solution10: "Plots for solution 10.",
+      solution11: "Plots for solution 11.",
+      solution12: "Plots for solution 12.",
+      solution13: "Plots for solution 13.",
+      solution14: "Plots for solution 14.",
+      solution15: "Plots for solution 15.",
+      solution16: "Plots for solution 16."
+    }
+  }
+}
+
+task getMetrics {
+  input {
+    File inputbam
+    File params
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+  set -euo pipefail
+
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  read_count=$(samtools stats ~{inputbam} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+  cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+  >>>
+
+  output {
+  File bamMetrics = "~{outputFileNamePrefix}_bam_metrics.csv"
+  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      bamMetrics: "Metrics collected from bam file used for ichorCNA, to be used as input for final json metrics collection (createJson task).",
+      all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
+    }
+  }
+}
+
+task createJson {
+  input {
+    File preBamMetrics
+    File bamMetrics
+    File allSolsMetrics
+    File plotsFile
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "pandas/1.4.2"
+    Int timeout = 12
+  }
+
+  parameter_meta {
+    preBamMetrics: "pre-merge bam metrics."
+    bamMetrics: "bam metrics."
+    allSolsMetrics: "metrics for all solutions"
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+    set -euo pipefail
+
+    python3 <<CODE
+    import csv, json
+    import pandas as pd
+
+    ### create json file with all metrics
+
+    bam_metric = pd.read_csv("~{bamMetrics}")
+    pre_metric = pd.read_csv("~{preBamMetrics}")
+    all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
+    all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
+    all_sols["solution"] = all_sols["init"]
+    pre_metric_dict = pre_metric.to_dict('index')
+    bam_metric_dict = bam_metric.to_dict('records')[0]
+    with open("~{plotsFile}") as f:
+      lines = f.readlines()
+
+    #reorganize lane sequencing data
+    lanes = []
+    for lane in pre_metric_dict:
+      lanes.append(pre_metric_dict[lane])
+
+    #find selected solution
+    selected_sol = ""
+    for index, row in all_sols.iterrows():
+      if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
+        selected_sol = row["init"]
+
+    #selecting metrics from all solutions
+    all_sols_metrics = {}
+    for index, row in all_sols.iterrows():
+      all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
+                                           "ploidy":row["phi_est"],
+                                           "loglik":row["loglik"]}
+
+    metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
+                    "total_reads": bam_metric_dict["read_count"],
+                    "lanes_sequenced": len(pre_metric_dict),
+                    "reads_per_lane":lanes,
+                    "best_solution": selected_sol,
+                    "tumor_fraction": bam_metric_dict["tumor_fraction"],
+                    "ploidy": bam_metric_dict["ploidy"],
+                    "solutions": all_sols_metrics}
+
+    with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
+      json.dump(metrics_dict, outfile)
+
+    ### create json output file for annotations
+    output_list = []
+    for line in lines:
+      pdf_dict = {}
+      line = line.strip()
+      len_pdf_sol = len(line.split("_")[-1])
+      pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
+      pdf_dict["left"] = line
+      pdf_dict["right"] = {}
+      pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
+      output_list.append(pdf_dict)
+    output_dict = {}
+    output_dict["pdfs"] = output_list
+
+    with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
+        json.dump(output_dict, outPdfJson)
+
+    CODE
+  >>>
+
+  output {
+    File metricsJson = "~{outputFileNamePrefix}_metrics.json"
+    PdfOutput pdfOutput = read_json("~{outputFileNamePrefix}_outputs.json")
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      metricsJson: "json file reporting mean coverage, total reads, lanes sequenced, reads per lane as well as ichorCNA reported ploidy, tumor_fraction for selected and all reported solutions.",
+      out: "Annotated output."
     }
   }
 }

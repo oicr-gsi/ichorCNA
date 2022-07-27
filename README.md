@@ -10,6 +10,8 @@ Workflow for estimating the fraction of tumor in cell-free DNA from sWGS
 * [samtools 1.14](http://www.htslib.org/)
 * [hmmcopy-utils 0.1.1](https://github.com/broadinstitute/ichorCNA)
 * [ichorcna 0.2](https://shahlab.ca/projects/hmmcopy_utils/)
+* [python 3.9](python.org)
+* [pandas 1.4.2](https://pandas.pydata.org/)
 
 
 ## Usage
@@ -73,15 +75,18 @@ Parameter|Value|Default|Description
 `bwaMem.trimMinQuality`|Int|0|minimum quality of read ends to keep [0]
 `bwaMem.adapter1`|String|"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"|adapter sequence to trim from read 1 [AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC]
 `bwaMem.adapter2`|String|"AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"|adapter sequence to trim from read 2 [AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT]
+`preMergeBamMetricsFastqInput.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`preMergeBamMetricsFastqInput.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
+`preMergeBamMetricsFastqInput.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `bamMerge.jobMemory`|Int|32|Memory allocated indexing job
 `bamMerge.modules`|String|"samtools/1.9"|Required environment modules
 `bamMerge.timeout`|Int|72|Hours before task timeout
+`preMergeBamMetrics.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`preMergeBamMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
+`preMergeBamMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `inputBamMerge.jobMemory`|Int|32|Memory allocated indexing job
 `inputBamMerge.modules`|String|"samtools/1.9"|Required environment modules
 `inputBamMerge.timeout`|Int|72|Hours before task timeout
-`calculateCoverage.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
-`calculateCoverage.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
-`calculateCoverage.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `indexBam.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
 `indexBam.modules`|String|"samtools/1.9"|Environment module name and version to load (space separated) before command execution.
 `indexBam.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -126,17 +131,39 @@ Parameter|Value|Default|Description
 `runIchorCNA.modules`|String|"ichorcna/0.2"|Environment module name and version to load (space separated) before command execution.
 `runIchorCNA.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runIchorCNA.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`getMetrics.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`getMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
+`getMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`createJson.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`createJson.modules`|String|"pandas/1.4.2"|Environment module name and version to load (space separated) before command execution.
+`createJson.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 
 
 ### Outputs
 
 Output | Type | Description
 ---|---|---
-`bam`|File?|alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).
-`bamIndex`|File?|output index file for bam aligned to genome.
-`coverageReport`|File|json file with the mean coverage for outbam.
+`solution1`|Pair[File,Map[String,String]]|Plots for solution 1.
+`solution2`|Pair[File,Map[String,String]]|Plots for solution 2.
+`solution3`|Pair[File,Map[String,String]]|Plots for solution 3.
+`solution4`|Pair[File,Map[String,String]]|Plots for solution 4.
+`solution5`|Pair[File,Map[String,String]]|Plots for solution 5.
+`solution6`|Pair[File,Map[String,String]]|Plots for solution 6.
+`solution7`|Pair[File,Map[String,String]]|Plots for solution 7.
+`solution8`|Pair[File,Map[String,String]]|Plots for solution 8.
+`solution9`|Pair[File,Map[String,String]]|Plots for solution 9.
+`solution10`|Pair[File,Map[String,String]]|Plots for solution 10.
+`solution11`|Pair[File,Map[String,String]]|Plots for solution 11.
+`solution12`|Pair[File,Map[String,String]]|Plots for solution 12.
+`solution13`|Pair[File,Map[String,String]]|Plots for solution 13.
+`solution14`|Pair[File,Map[String,String]]|Plots for solution 14.
+`solution15`|Pair[File,Map[String,String]]|Plots for solution 15.
+`solution16`|Pair[File,Map[String,String]]|Plots for solution 16.
+`bam`|File?|Bam file used as input to ichorCNA (only produced when provisionBam is True)
+`bamIndex`|File?|Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)
+`jsonMetrics`|File|Report on bam coverage, read counts and ichorCNA metrics.
 `segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.
-`segmentsWithSubclonalStatus`|File|Same as `segments` but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
+`segmentsWithSubclonalStatus`|File|Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
 `estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.
 `convergedParameters`|File|Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.
 `correctedDepth`|File|Log2 ratio of each bin/window after correction for GC and mappability biases.
@@ -146,18 +173,27 @@ Output | Type | Description
 
 ## Commands
  This section lists command(s) run by ichorCNA workflow
-
+ 
  * Running ichorCNA workflow
-
- IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information or an array of bam file(s). When the input is fastqs, the ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. When the input is bam(s) the workflow will merge if necessary or continue. The next step prepares the data for ichorCNA which is the final step in the workflow.
-
+ 
+ IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+ 
  MERGE BAMS
-  ```
- samtools merge -c ~{resultMergedBam} ~{sep=" " bams}
-  ```
- CALCULATE COVERAGE
  ```
- samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }' | awk '{print "{\"mean coverage\":" $1 "}"}' > ~{outputFileNamePrefix}_coverage.json
+  samtools merge \
+  -c \
+  ~{resultMergedBam} \
+  ~{sep=" " bams}
+ ```
+ COLLECT PRE-MERGE BAM METRICS
+ ```
+ echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+ for file in ~{sep=' ' bam}
+ do
+   run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+   read_count=$(samtools view -c "${file}")
+   echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+ done;
  ```
  INDEX BAM
  ```
@@ -166,14 +202,14 @@ Output | Type | Description
  READCOUNTER
   ```
  samtools index ~{bam}
-
+ 
  # calculate chromosomes to analyze (with reads) from input data
  CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
-
+ 
  # write out a chromosomes with reads for ichorCNA
  # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
  echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
-
+ 
  # convert
  readCounter \
  --window ~{windowSize} \
@@ -222,10 +258,89 @@ Output | Type | Description
      ~{"--plotYLim " + plotYLim} \
      ~{"--libdir " + libdir} \
      --outDir ~{outDir}
-
+ 
      # compress directory of plots
      tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
+ 
+     #create txt file with plot full path
+     ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
   ```
+  COLLECT FINAL BAM AND ICHORCNA METRICS
+  ```
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+  cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+  ```
+ CREATE JSON WITH METRICS COLLECTED
+ ```
+ python3 <<CODE
+ import csv, json
+ import pandas as pd
+ 
+ ### create json file with all metrics
+ bam_metric = pd.read_csv("~{bamMetrics}")
+ pre_metric = pd.read_csv("~{preBamMetrics}")
+ all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
+ all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
+ all_sols["solution"] = all_sols["init"]
+ pre_metric_dict = pre_metric.to_dict('index')
+ bam_metric_dict = bam_metric.to_dict('records')[0]
+ with open("~{plotsFile}") as f:
+   lines = f.readlines()
+ 
+ #reorganize lane sequencing data
+ lanes = []
+ for lane in pre_metric_dict:
+   lanes.append(pre_metric_dict[lane])
+ 
+ #find selected solution
+ selected_sol = ""
+ for index, row in all_sols.iterrows():
+   if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
+     selected_sol = row["init"]
+ 
+ #selecting metrics from all solutions
+ all_sols_metrics = {}
+ for index, row in all_sols.iterrows():
+   all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
+                                        "ploidy":row["phi_est"],
+                                        "loglik":row["loglik"]}
+ 
+ metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
+                 "total_reads": bam_metric_dict["read_count"],
+                 "lanes_sequenced": len(pre_metric_dict),
+                 "reads_per_lane":lanes,
+                 "best_solution": selected_sol,
+                 "tumor_fraction": bam_metric_dict["tumor_fraction"],
+                 "ploidy": bam_metric_dict["ploidy"],
+                 "solutions": all_sols_metrics}
+ 
+ with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
+   json.dump(metrics_dict, outfile)
+ 
+ ### create json output file for annotations
+ output_list = []
+ for line in lines:
+   pdf_dict = {}
+   line = line.strip()
+   len_pdf_sol = len(line.split("_")[-1])
+   pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
+   pdf_dict["left"] = line
+   pdf_dict["right"] = {}
+   pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
+   output_list.append(pdf_dict)
+ output_dict = {}
+ output_dict["pdfs"] = output_list
+ 
+ with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
+     json.dump(output_dict, outPdfJson)
+ 
+ CODE
+ ```
  ## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
