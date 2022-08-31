@@ -286,10 +286,10 @@ task preMergeBamMetrics {
   command <<<
   set -euo pipefail
 
-  echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   for file in ~{sep=' ' bam}
   do
-    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
     read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
     echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   done;
