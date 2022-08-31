@@ -1,6 +1,7 @@
 version 1.0
 
 import "imports/pull_bwa.wdl" as bwaMem
+import "imports/pull_bamQC.wdl" as bamQC
 
 struct InputGroup {
   File fastqR1
@@ -112,6 +113,12 @@ workflow ichorCNA {
       outputFileNamePrefix=outputFileNamePrefix,
       chrs=runReadCounter.ichorCNAchrs,
       wig=runReadCounter.wig
+  }
+
+  call bamQC.bamQC {
+    input:
+        bamFile = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+        outputFileNamePrefix = outputFileNamePrefix
   }
 
   call getMetrics {
