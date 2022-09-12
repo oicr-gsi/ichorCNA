@@ -201,7 +201,7 @@ workflow ichorCNA {
       pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
       bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
-      bamQCresult: "bamQC report"
+      bamQCresult: "bamQC report.",
       jsonMetrics: "Report on bam coverage, read counts and ichorCNA metrics.",
       segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
       segmentsWithSubclonalStatus: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
