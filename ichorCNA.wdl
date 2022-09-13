@@ -164,7 +164,7 @@ workflow ichorCNA {
     File correctedDepth = runIchorCNA.correctedDepth
     File rData = runIchorCNA.rData
     File plots = runIchorCNA.plots
-    File bamQCresult = bamQC.bamQC.result
+    File bamQCresult = bamQC.result
   }
 
   meta {
