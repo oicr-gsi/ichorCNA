@@ -3,6 +3,22 @@
     "id": "TGL49_0083",
     "description": "ichorCNA workflow test, one fastq pair",
     "arguments": {
+      "ichorCNA.bamQC.bamQCMetrics_refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,SW,WG.hg38.bed",
+      "ichorCNA.bamQC.bamQCMetrics_workflowVersion": "4.0.5",
+      "ichorCNA.bamQC.metadata": {
+        "lane": "1",
+        "donor": "TGL48_0001",
+        "sample": "TGL48_0001_Ct_T_PE_312_WG",
+        "barcode": "CTTGTCGA-CGATGTTC",
+        "library": "TGL48_0001_Ct_T_PE_312_WG",
+        "group id": "",
+        "run name": "201130_NB551051_0196_AH3GGWBGXH",
+        "instrument": "Illumina NextSeq",
+        "tissue type": "T",
+        "tissue origin": "Ct",
+        "library design": "WG"
+      },
       "ichorCNA.bamMerge.jobMemory": null,
       "ichorCNA.bamMerge.modules": null,
       "ichorCNA.bamMerge.timeout": null,
