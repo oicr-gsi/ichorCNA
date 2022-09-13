@@ -428,7 +428,7 @@
       "ichorCNA.bamQC.bamQCMetrics_refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
       "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,SW,WG.hg38.bed",
       "ichorCNA.bamQC.bamQCMetrics_workflowVersion": "4.0.5",
-      "ichorCNA.bamQC.metadata": {{
+      "ichorCNA.bamQC.metadata": {
          "lane": "1,1",
          "donor": "TGL49_0111",
          "sample": "TGL49_0111_Cf_U_PE_330_WG",
