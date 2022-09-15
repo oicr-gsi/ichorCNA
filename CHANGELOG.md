@@ -1,3 +1,7 @@
+## 1.1.1 - 2022-09-15
+- Fix typos in json metrics file
+- Add bamQC as subworkflow to produce metrics on bam file used for ichorCNA
+
 ## 1.1.0 - 2022-07-27
 - Collect additional metrics
 - Output metrics in json file

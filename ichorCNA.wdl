@@ -1,6 +1,7 @@
 version 1.0
 
 import "imports/pull_bwa.wdl" as bwaMem
+import "imports/pull_bamQC.wdl" as bamQC
 
 struct InputGroup {
   File fastqR1
@@ -114,6 +115,12 @@ workflow ichorCNA {
       wig=runReadCounter.wig
   }
 
+  call bamQC.bamQC {
+    input:
+        bamFile = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+        outputFileNamePrefix = outputFileNamePrefix
+  }
+
   call getMetrics {
     input:
       inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
@@ -157,6 +164,7 @@ workflow ichorCNA {
     File correctedDepth = runIchorCNA.correctedDepth
     File rData = runIchorCNA.rData
     File plots = runIchorCNA.plots
+    File bamQCresult = bamQC.result
   }
 
   meta {
@@ -193,6 +201,7 @@ workflow ichorCNA {
       pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
       bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
+      bamQCresult: "bamQC report.",
       jsonMetrics: "Report on bam coverage, read counts and ichorCNA metrics.",
       segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
       segmentsWithSubclonalStatus: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
@@ -217,7 +226,6 @@ workflow ichorCNA {
       solution14: "Plots for solution 14.",
       solution15: "Plots for solution 15.",
       solution16: "Plots for solution 16."
-
     }
   }
 }
@@ -286,10 +294,10 @@ task preMergeBamMetrics {
   command <<<
   set -euo pipefail
 
-  echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   for file in ~{sep=' ' bam}
   do
-    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
+    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
     read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
     echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   done;
