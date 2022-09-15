@@ -34,6 +34,10 @@ Parameter|Value|Description
 `inputType`|String|one of either fastq or bam
 `bwaMem.runBwaMem_bwaRef`|String|The reference genome to align the sample with by BWA
 `bwaMem.runBwaMem_modules`|String|Required environment modules
+`bamQC.bamQCMetrics_workflowVersion`|String|Workflow version string
+`bamQC.bamQCMetrics_refSizesBed`|String|Path to human genome BED reference with chromosome sizes
+`bamQC.bamQCMetrics_refFasta`|String|Path to human genome FASTA reference
+`bamQC.metadata`|Map[String,String]|JSON file containing metadata
 
 
 #### Optional workflow parameters:
@@ -131,6 +135,74 @@ Parameter|Value|Default|Description
 `runIchorCNA.modules`|String|"ichorcna/0.2"|Environment module name and version to load (space separated) before command execution.
 `runIchorCNA.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runIchorCNA.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`bamQC.collateResults_timeout`|Int|1|hours before task timeout
+`bamQC.collateResults_threads`|Int|4|Requested CPU threads
+`bamQC.collateResults_jobMemory`|Int|8|Memory allocated for this job
+`bamQC.collateResults_modules`|String|"python/3.6"|required environment modules
+`bamQC.cumulativeDistToHistogram_timeout`|Int|1|hours before task timeout
+`bamQC.cumulativeDistToHistogram_threads`|Int|4|Requested CPU threads
+`bamQC.cumulativeDistToHistogram_jobMemory`|Int|8|Memory allocated for this job
+`bamQC.cumulativeDistToHistogram_modules`|String|"python/3.6"|required environment modules
+`bamQC.runMosdepth_timeout`|Int|4|hours before task timeout
+`bamQC.runMosdepth_threads`|Int|4|Requested CPU threads
+`bamQC.runMosdepth_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.runMosdepth_modules`|String|"mosdepth/0.2.9"|required environment modules
+`bamQC.bamQCMetrics_timeout`|Int|4|hours before task timeout
+`bamQC.bamQCMetrics_threads`|Int|4|Requested CPU threads
+`bamQC.bamQCMetrics_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.bamQCMetrics_modules`|String|"bam-qc-metrics/0.2.5"|required environment modules
+`bamQC.bamQCMetrics_normalInsertMax`|Int|1500|Maximum of expected insert size range
+`bamQC.markDuplicates_timeout`|Int|4|hours before task timeout
+`bamQC.markDuplicates_threads`|Int|4|Requested CPU threads
+`bamQC.markDuplicates_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.markDuplicates_modules`|String|"picard/2.21.2"|required environment modules
+`bamQC.markDuplicates_picardMaxMemMb`|Int|6000|Memory requirement in MB for running Picard JAR
+`bamQC.markDuplicates_opticalDuplicatePixelDistance`|Int|100|Maximum offset between optical duplicate clusters
+`bamQC.downsampleRegion_timeout`|Int|4|hours before task timeout
+`bamQC.downsampleRegion_threads`|Int|4|Requested CPU threads
+`bamQC.downsampleRegion_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.downsampleRegion_modules`|String|"samtools/1.9"|required environment modules
+`bamQC.downsample_timeout`|Int|4|hours before task timeout
+`bamQC.downsample_threads`|Int|4|Requested CPU threads
+`bamQC.downsample_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.downsample_modules`|String|"samtools/1.9"|required environment modules
+`bamQC.downsample_randomSeed`|Int|42|Random seed for pre-downsampling (if any)
+`bamQC.downsample_downsampleSuffix`|String|"downsampled.bam"|Suffix for output file
+`bamQC.findDownsampleParamsMarkDup_timeout`|Int|4|hours before task timeout
+`bamQC.findDownsampleParamsMarkDup_threads`|Int|4|Requested CPU threads
+`bamQC.findDownsampleParamsMarkDup_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.findDownsampleParamsMarkDup_modules`|String|"python/3.6"|required environment modules
+`bamQC.findDownsampleParamsMarkDup_customRegions`|String|""|Custom downsample regions; overrides chromosome and interval parameters
+`bamQC.findDownsampleParamsMarkDup_intervalStart`|Int|100000|Start of interval in each chromosome, for very large BAMs
+`bamQC.findDownsampleParamsMarkDup_baseInterval`|Int|15000|Base width of interval in each chromosome, for very large BAMs
+`bamQC.findDownsampleParamsMarkDup_chromosomes`|Array[String]|["chr12", "chr13", "chrXII", "chrXIII"]|Array of chromosome identifiers for downsampled subset
+`bamQC.findDownsampleParamsMarkDup_threshold`|Int|10000000|Minimum number of reads to conduct downsampling
+`bamQC.findDownsampleParams_timeout`|Int|4|hours before task timeout
+`bamQC.findDownsampleParams_threads`|Int|4|Requested CPU threads
+`bamQC.findDownsampleParams_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.findDownsampleParams_modules`|String|"python/3.6"|required environment modules
+`bamQC.findDownsampleParams_preDSMultiplier`|Float|1.5|Determines target size for pre-downsampled set (if any). Must have (preDSMultiplier) < (minReadsRelative).
+`bamQC.findDownsampleParams_precision`|Int|8|Number of decimal places in fraction for pre-downsampling
+`bamQC.findDownsampleParams_minReadsRelative`|Int|2|Minimum value of (inputReads)/(targetReads) to allow pre-downsampling
+`bamQC.findDownsampleParams_minReadsAbsolute`|Int|10000|Minimum value of targetReads to allow pre-downsampling
+`bamQC.findDownsampleParams_targetReads`|Int|100000|Desired number of reads in downsampled output
+`bamQC.indexBamFile_timeout`|Int|4|hours before task timeout
+`bamQC.indexBamFile_threads`|Int|4|Requested CPU threads
+`bamQC.indexBamFile_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.indexBamFile_modules`|String|"samtools/1.9"|required environment modules
+`bamQC.countInputReads_timeout`|Int|4|hours before task timeout
+`bamQC.countInputReads_threads`|Int|4|Requested CPU threads
+`bamQC.countInputReads_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.countInputReads_modules`|String|"samtools/1.9"|required environment modules
+`bamQC.updateMetadata_timeout`|Int|4|hours before task timeout
+`bamQC.updateMetadata_threads`|Int|4|Requested CPU threads
+`bamQC.updateMetadata_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.updateMetadata_modules`|String|"python/3.6"|required environment modules
+`bamQC.filter_timeout`|Int|4|hours before task timeout
+`bamQC.filter_threads`|Int|4|Requested CPU threads
+`bamQC.filter_jobMemory`|Int|16|Memory allocated for this job
+`bamQC.filter_modules`|String|"samtools/1.9"|required environment modules
+`bamQC.filter_minQuality`|Int|30|Minimum alignment quality to pass filter
 `getMetrics.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
 `getMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `getMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -169,6 +241,7 @@ Output | Type | Description
 `correctedDepth`|File|Log2 ratio of each bin/window after correction for GC and mappability biases.
 `rData`|File|Saved R image after ichorCNA has finished. Results for all solutions will be included.
 `plots`|File|Archived directory of plots.
+`bamQCresult`|File|bamQC report.
 
 
 ## Commands
