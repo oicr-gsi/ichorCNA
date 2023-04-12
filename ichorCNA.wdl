@@ -695,7 +695,6 @@ task createJson {
     ### create json output file for annotations
     output_list = []
     for line in lines:
-        print(line)
         pdf_dict = {}
         line = line.strip()
         pdf_dict["left"] = line
