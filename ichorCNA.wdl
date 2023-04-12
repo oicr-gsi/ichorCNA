@@ -695,13 +695,13 @@ task createJson {
     ### create json output file for annotations
     output_list = []
     for line in lines:
-        pdf_dict = {}
-        line = line.strip()
-        pdf_dict["left"] = line
-        pdf_dict["right"] = {}
-        pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
-        pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
-        output_list.append(pdf_dict)
+      pdf_dict = {}
+      line = line.strip()
+      pdf_dict["left"] = line
+      pdf_dict["right"] = {}
+      pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+      pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
+      output_list.append(pdf_dict)
     output_dict = {}
     output_dict["pdfs"] = output_list
 
