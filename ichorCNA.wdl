@@ -210,22 +210,8 @@ workflow ichorCNA {
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
-      solution1: "Plots for solution 1.",
-      solution2: "Plots for solution 2.",
-      solution3: "Plots for solution 3.",
-      solution4: "Plots for solution 4.",
-      solution5: "Plots for solution 5.",
-      solution6: "Plots for solution 6.",
-      solution7: "Plots for solution 7.",
-      solution8: "Plots for solution 8.",
-      solution9: "Plots for solution 9.",
-      solution10: "Plots for solution 10.",
-      solution11: "Plots for solution 11.",
-      solution12: "Plots for solution 12.",
-      solution13: "Plots for solution 13.",
-      solution14: "Plots for solution 14.",
-      solution15: "Plots for solution 15.",
-      solution16: "Plots for solution 16."
+      genomeWideAll: "Genome wide plots for each solution",
+      genomeWide: "Genome wide plots for the selected solution"
     }
   }
 }
@@ -560,7 +546,8 @@ task runIchorCNA {
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
 
     #create txt file with plot full path
-    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_all_sols.pdf > "~{outputFileNamePrefix}"_plots.txt
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide.pdf >> "~{outputFileNamePrefix}"_plots.txt
   >>>
 
   runtime {
@@ -578,23 +565,8 @@ task runIchorCNA {
     File rData = "~{outputFileNamePrefix}.RData"
     File plots = "~{outputFileNamePrefix}_plots.tar.gz"
     File plotsTxt = "~{outputFileNamePrefix}_plots.txt"
-    File solution1 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p2.pdf"
-    File solution2 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p3.pdf"
-    File solution3 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p2.pdf"
-    File solution4 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p3.pdf"
-    File solution5 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p2.pdf"
-    File solution6 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p3.pdf"
-    File solution7 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p2.pdf"
-    File solution8 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p3.pdf"
-    File solution9 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p2.pdf"
-    File solution10 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p3.pdf"
-    File solution11 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p2.pdf"
-    File solution12 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p3.pdf"
-    File solution13 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p2.pdf"
-    File solution14 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p3.pdf"
-    File solution15 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p2.pdf"
-    File solution16 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p3.pdf"
-
+    File genomeWideAll = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_all_sols.pdf"
+    File genomeWide = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide.pdf"
   }
 
 
@@ -608,22 +580,8 @@ task runIchorCNA {
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
       plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
-      solution1: "Plots for solution 1.",
-      solution2: "Plots for solution 2.",
-      solution3: "Plots for solution 3.",
-      solution4: "Plots for solution 4.",
-      solution5: "Plots for solution 5.",
-      solution6: "Plots for solution 6.",
-      solution7: "Plots for solution 7.",
-      solution8: "Plots for solution 8.",
-      solution9: "Plots for solution 9.",
-      solution10: "Plots for solution 10.",
-      solution11: "Plots for solution 11.",
-      solution12: "Plots for solution 12.",
-      solution13: "Plots for solution 13.",
-      solution14: "Plots for solution 14.",
-      solution15: "Plots for solution 15.",
-      solution16: "Plots for solution 16."
+      genomeWideAll: "Genome wide plots for each solution",
+      genomeWide: "Genome wide plots for the selected solution"
     }
   }
 }
