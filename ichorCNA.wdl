@@ -138,22 +138,8 @@ workflow ichorCNA {
   }
 
   output {
-    Pair[File,Map[String,String]] solution1 = createJson.pdfOutput.pdfs[0]
-    Pair[File,Map[String,String]] solution2 = createJson.pdfOutput.pdfs[1]
-    Pair[File,Map[String,String]] solution3 = createJson.pdfOutput.pdfs[2]
-    Pair[File,Map[String,String]] solution4 = createJson.pdfOutput.pdfs[3]
-    Pair[File,Map[String,String]] solution5 = createJson.pdfOutput.pdfs[4]
-    Pair[File,Map[String,String]] solution6 = createJson.pdfOutput.pdfs[5]
-    Pair[File,Map[String,String]] solution7 = createJson.pdfOutput.pdfs[6]
-    Pair[File,Map[String,String]] solution8 = createJson.pdfOutput.pdfs[7]
-    Pair[File,Map[String,String]] solution9 = createJson.pdfOutput.pdfs[8]
-    Pair[File,Map[String,String]] solution10 = createJson.pdfOutput.pdfs[9]
-    Pair[File,Map[String,String]] solution11 = createJson.pdfOutput.pdfs[10]
-    Pair[File,Map[String,String]] solution12 = createJson.pdfOutput.pdfs[11]
-    Pair[File,Map[String,String]] solution13 = createJson.pdfOutput.pdfs[12]
-    Pair[File,Map[String,String]] solution14 = createJson.pdfOutput.pdfs[13]
-    Pair[File,Map[String,String]] solution15 = createJson.pdfOutput.pdfs[14]
-    Pair[File,Map[String,String]] solution16 = createJson.pdfOutput.pdfs[15]
+    Pair[File,Map[String,String]] genomeWideAll = createJson.pdfOutput.pdfs[0]
+    Pair[File,Map[String,String]] genomeWide = createJson.pdfOutput.pdfs[1]
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
     File jsonMetrics = createJson.metricsJson
@@ -198,7 +184,7 @@ workflow ichorCNA {
       }
     ]
     output_meta: {
-      pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
+      pdf: "Annotations for pdf files produced by ichorCNA, each pdf is annotated with the tumor fraction, ploidy for the selected solution.",
       bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamQCresult: "bamQC report.",
