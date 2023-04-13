@@ -231,7 +231,7 @@ Output | Type | Description
 
 
 ## Commands
- This section lists command(s) run by WORKFLOW workflow
+ This section lists command(s) run by ichorCNA workflow
  
  * Running ichorCNA workflow
  
