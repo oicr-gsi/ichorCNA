@@ -138,22 +138,8 @@ workflow ichorCNA {
   }
 
   output {
-    Pair[File,Map[String,String]] solution1 = createJson.pdfOutput.pdfs[0]
-    Pair[File,Map[String,String]] solution2 = createJson.pdfOutput.pdfs[1]
-    Pair[File,Map[String,String]] solution3 = createJson.pdfOutput.pdfs[2]
-    Pair[File,Map[String,String]] solution4 = createJson.pdfOutput.pdfs[3]
-    Pair[File,Map[String,String]] solution5 = createJson.pdfOutput.pdfs[4]
-    Pair[File,Map[String,String]] solution6 = createJson.pdfOutput.pdfs[5]
-    Pair[File,Map[String,String]] solution7 = createJson.pdfOutput.pdfs[6]
-    Pair[File,Map[String,String]] solution8 = createJson.pdfOutput.pdfs[7]
-    Pair[File,Map[String,String]] solution9 = createJson.pdfOutput.pdfs[8]
-    Pair[File,Map[String,String]] solution10 = createJson.pdfOutput.pdfs[9]
-    Pair[File,Map[String,String]] solution11 = createJson.pdfOutput.pdfs[10]
-    Pair[File,Map[String,String]] solution12 = createJson.pdfOutput.pdfs[11]
-    Pair[File,Map[String,String]] solution13 = createJson.pdfOutput.pdfs[12]
-    Pair[File,Map[String,String]] solution14 = createJson.pdfOutput.pdfs[13]
-    Pair[File,Map[String,String]] solution15 = createJson.pdfOutput.pdfs[14]
-    Pair[File,Map[String,String]] solution16 = createJson.pdfOutput.pdfs[15]
+    Pair[File,Map[String,String]] genomeWideAll = createJson.pdfOutput.pdfs[0]
+    Pair[File,Map[String,String]] genomeWide = createJson.pdfOutput.pdfs[1]
     File? bam = indexBam.outbam
     File? bamIndex = indexBam.bamIndex
     File jsonMetrics = createJson.metricsJson
@@ -198,7 +184,7 @@ workflow ichorCNA {
       }
     ]
     output_meta: {
-      pdf: "Annotations for pdf files produced by ichorCNA, each pdf produced is annotated with tumor fraction, ploidy and log likelihood.",
+      pdf: "Annotations for pdf files produced by ichorCNA, each pdf is annotated with the tumor fraction, ploidy for the selected solution.",
       bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
       bamQCresult: "bamQC report.",
@@ -210,22 +196,8 @@ workflow ichorCNA {
       correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
-      solution1: "Plots for solution 1.",
-      solution2: "Plots for solution 2.",
-      solution3: "Plots for solution 3.",
-      solution4: "Plots for solution 4.",
-      solution5: "Plots for solution 5.",
-      solution6: "Plots for solution 6.",
-      solution7: "Plots for solution 7.",
-      solution8: "Plots for solution 8.",
-      solution9: "Plots for solution 9.",
-      solution10: "Plots for solution 10.",
-      solution11: "Plots for solution 11.",
-      solution12: "Plots for solution 12.",
-      solution13: "Plots for solution 13.",
-      solution14: "Plots for solution 14.",
-      solution15: "Plots for solution 15.",
-      solution16: "Plots for solution 16."
+      genomeWideAll: "Genome wide plots for each solution",
+      genomeWide: "Genome wide plots for the selected solution"
     }
   }
 }
@@ -560,7 +532,8 @@ task runIchorCNA {
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
 
     #create txt file with plot full path
-    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_all_sols.pdf > "~{outputFileNamePrefix}"_plots.txt
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide.pdf >> "~{outputFileNamePrefix}"_plots.txt
   >>>
 
   runtime {
@@ -578,23 +551,8 @@ task runIchorCNA {
     File rData = "~{outputFileNamePrefix}.RData"
     File plots = "~{outputFileNamePrefix}_plots.tar.gz"
     File plotsTxt = "~{outputFileNamePrefix}_plots.txt"
-    File solution1 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p2.pdf"
-    File solution2 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.2-p3.pdf"
-    File solution3 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p2.pdf"
-    File solution4 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.3-p3.pdf"
-    File solution5 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p2.pdf"
-    File solution6 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.4-p3.pdf"
-    File solution7 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p2.pdf"
-    File solution8 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.5-p3.pdf"
-    File solution9 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p2.pdf"
-    File solution10 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.6-p3.pdf"
-    File solution11 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p2.pdf"
-    File solution12 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.7-p3.pdf"
-    File solution13 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p2.pdf"
-    File solution14 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.8-p3.pdf"
-    File solution15 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p2.pdf"
-    File solution16 = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_n0.9-p3.pdf"
-
+    File genomeWideAll = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide_all_sols.pdf"
+    File genomeWide = "~{outputFileNamePrefix}/~{outputFileNamePrefix}_genomeWide.pdf"
   }
 
 
@@ -608,22 +566,8 @@ task runIchorCNA {
       rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
       plots: "Archived directory of plots.",
       plotsTxt: "Text file with the full path to the solution 1-16 pdfs.",
-      solution1: "Plots for solution 1.",
-      solution2: "Plots for solution 2.",
-      solution3: "Plots for solution 3.",
-      solution4: "Plots for solution 4.",
-      solution5: "Plots for solution 5.",
-      solution6: "Plots for solution 6.",
-      solution7: "Plots for solution 7.",
-      solution8: "Plots for solution 8.",
-      solution9: "Plots for solution 9.",
-      solution10: "Plots for solution 10.",
-      solution11: "Plots for solution 11.",
-      solution12: "Plots for solution 12.",
-      solution13: "Plots for solution 13.",
-      solution14: "Plots for solution 14.",
-      solution15: "Plots for solution 15.",
-      solution16: "Plots for solution 16."
+      genomeWideAll: "Genome wide plots for each solution",
+      genomeWide: "Genome wide plots for the selected solution"
     }
   }
 }
@@ -753,11 +697,10 @@ task createJson {
     for line in lines:
       pdf_dict = {}
       line = line.strip()
-      len_pdf_sol = len(line.split("_")[-1])
-      pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
       pdf_dict["left"] = line
       pdf_dict["right"] = {}
-      pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
+      pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+      pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
       output_list.append(pdf_dict)
     output_dict = {}
     output_dict["pdfs"] = output_list

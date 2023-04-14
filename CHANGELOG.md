@@ -1,3 +1,6 @@
+## 1.1.2 - 2023-04-12
+- Update the pdfs provisioned out
+
 ## 1.1.1 - 2022-09-15
 - Fix typos in json metrics file
 - Add bamQC as subworkflow to produce metrics on bam file used for ichorCNA

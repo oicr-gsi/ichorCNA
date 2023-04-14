@@ -215,22 +215,8 @@ Parameter|Value|Default|Description
 
 Output | Type | Description
 ---|---|---
-`solution1`|Pair[File,Map[String,String]]|Plots for solution 1.
-`solution2`|Pair[File,Map[String,String]]|Plots for solution 2.
-`solution3`|Pair[File,Map[String,String]]|Plots for solution 3.
-`solution4`|Pair[File,Map[String,String]]|Plots for solution 4.
-`solution5`|Pair[File,Map[String,String]]|Plots for solution 5.
-`solution6`|Pair[File,Map[String,String]]|Plots for solution 6.
-`solution7`|Pair[File,Map[String,String]]|Plots for solution 7.
-`solution8`|Pair[File,Map[String,String]]|Plots for solution 8.
-`solution9`|Pair[File,Map[String,String]]|Plots for solution 9.
-`solution10`|Pair[File,Map[String,String]]|Plots for solution 10.
-`solution11`|Pair[File,Map[String,String]]|Plots for solution 11.
-`solution12`|Pair[File,Map[String,String]]|Plots for solution 12.
-`solution13`|Pair[File,Map[String,String]]|Plots for solution 13.
-`solution14`|Pair[File,Map[String,String]]|Plots for solution 14.
-`solution15`|Pair[File,Map[String,String]]|Plots for solution 15.
-`solution16`|Pair[File,Map[String,String]]|Plots for solution 16.
+`genomeWideAll`|Pair[File,Map[String,String]]|Genome wide plots for each solution
+`genomeWide`|Pair[File,Map[String,String]]|Genome wide plots for the selected solution
 `bam`|File?|Bam file used as input to ichorCNA (only produced when provisionBam is True)
 `bamIndex`|File?|Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)
 `jsonMetrics`|File|Report on bam coverage, read counts and ichorCNA metrics.
@@ -253,21 +239,21 @@ Output | Type | Description
  
  MERGE BAMS
  ```
-  samtools merge \
-  -c \
-  ~{resultMergedBam} \
-  ~{sep=" " bams}
+ samtools merge \
+ -c \
+ ~{resultMergedBam} \
+ ~{sep=" " bams}
  ```
  COLLECT PRE-MERGE BAM METRICS
  ```
- echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+ echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
  for file in ~{sep=' ' bam}
  do
-   run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
-   read_count=$(samtools view -c "${file}")
+   run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+   read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
  done;
- ```
+ ``` 
  INDEX BAM
  ```
  samtools index ~{inputbam} ~{resultBai}
@@ -355,6 +341,7 @@ Output | Type | Description
  import pandas as pd
  
  ### create json file with all metrics
+ 
  bam_metric = pd.read_csv("~{bamMetrics}")
  pre_metric = pd.read_csv("~{preBamMetrics}")
  all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
@@ -380,8 +367,8 @@ Output | Type | Description
  all_sols_metrics = {}
  for index, row in all_sols.iterrows():
    all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
-                                        "ploidy":row["phi_est"],
-                                        "loglik":row["loglik"]}
+                                       "ploidy":row["phi_est"],
+                                       "loglik":row["loglik"]}
  
  metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
                  "total_reads": bam_metric_dict["read_count"],
@@ -398,14 +385,13 @@ Output | Type | Description
  ### create json output file for annotations
  output_list = []
  for line in lines:
-   pdf_dict = {}
-   line = line.strip()
-   len_pdf_sol = len(line.split("_")[-1])
-   pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
-   pdf_dict["left"] = line
-   pdf_dict["right"] = {}
-   pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
-   output_list.append(pdf_dict)
+    pdf_dict = {}
+    line = line.strip()
+    pdf_dict["left"] = line
+    pdf_dict["right"] = {}
+    pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+    pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
+    output_list.append(pdf_dict)
  output_dict = {}
  output_dict["pdfs"] = output_list
  

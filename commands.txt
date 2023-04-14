@@ -7,21 +7,22 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
 
 MERGE BAMS
 ```
- samtools merge \
- -c \
- ~{resultMergedBam} \
- ~{sep=" " bams}
+samtools merge \
+-c \
+~{resultMergedBam} \
+~{sep=" " bams}
 ```
+
 COLLECT PRE-MERGE BAM METRICS
 ```
-echo run_lane,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
 for file in ~{sep=' ' bam}
 do
-  run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":")
-  read_count=$(samtools view -c "${file}")
+  run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+  read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
   echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
 done;
-```
+``` 
 INDEX BAM
 ```
 samtools index ~{inputbam} ~{resultBai}
@@ -109,6 +110,7 @@ import csv, json
 import pandas as pd
 
 ### create json file with all metrics
+
 bam_metric = pd.read_csv("~{bamMetrics}")
 pre_metric = pd.read_csv("~{preBamMetrics}")
 all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
@@ -134,8 +136,8 @@ for index, row in all_sols.iterrows():
 all_sols_metrics = {}
 for index, row in all_sols.iterrows():
   all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
-                                       "ploidy":row["phi_est"],
-                                       "loglik":row["loglik"]}
+                                      "ploidy":row["phi_est"],
+                                      "loglik":row["loglik"]}
 
 metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
                 "total_reads": bam_metric_dict["read_count"],
@@ -152,14 +154,14 @@ with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
 ### create json output file for annotations
 output_list = []
 for line in lines:
-  pdf_dict = {}
-  line = line.strip()
-  len_pdf_sol = len(line.split("_")[-1])
-  pdf_solution = line.split("_")[-1][0:(len_pdf_sol-4)]
-  pdf_dict["left"] = line
-  pdf_dict["right"] = {}
-  pdf_dict["right"] = metrics_dict["solutions"][pdf_solution]
-  output_list.append(pdf_dict)
+    print(line)
+    pdf_dict = {}
+    line = line.strip()
+    pdf_dict["left"] = line
+    pdf_dict["right"] = {}
+    pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+    pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
+    output_list.append(pdf_dict)
 output_dict = {}
 output_dict["pdfs"] = output_list
 
