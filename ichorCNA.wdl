@@ -13,6 +13,17 @@ struct PdfOutput {
   Array[Pair[File,Map[String,String]]]+ pdfs
 }
 
+struct ichorCNAResources {
+    String gcWig
+    String mapWig
+    String normalPanel
+    String centromere
+    String ichorCNAModules
+    String bwaMemModules
+    String bwaRef
+}
+
+
 workflow ichorCNA {
   input {
     Array[InputGroup]? inputGroups
@@ -23,6 +34,7 @@ workflow ichorCNA {
     String chromosomesToAnalyze
     Boolean provisionBam
     String inputType
+    String reference
   }
 
   parameter_meta {
@@ -34,7 +46,29 @@ workflow ichorCNA {
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     provisionBam: "Boolean, to provision out bam file and coverage metrics"
     inputType: "one of either fastq or bam"
+    reference: "The genome reference build. for example: hg19, hg38"
   }
+
+
+Map[String,ichorCNAResources] resources = {
+    "hg19": {
+      "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg19_1000kb.wig",
+      "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
+      "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
+      "bwaMemModules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
+      "bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa"
+    },
+    "hg38": {
+      "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
+      "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
+      "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
+      "bwaMemModules": "samtools/1.9 bwa/0.7.12 hg38-bwa-index-with-alt/0.7.12",
+      "bwaRef": "$HG38_BWA_INDEX_WITH_ALT_ROOT/hg38_random.fa"
+    }
+  }
+
 
   if(inputType=="fastq" && defined(inputGroups)){
     Array[InputGroup] inputGroups_ = select_first([inputGroups])
@@ -45,7 +79,9 @@ workflow ichorCNA {
           fastqR2 = ig.fastqR2,
           readGroups = ig.readGroups,
           doTrim = true,
-          outputFileNamePrefix = outputFileNamePrefix
+          outputFileNamePrefix = outputFileNamePrefix,
+          runBwaMem_bwaRef = resources [ reference ].bwaRef,
+          runBwaMem_modules = resources [ reference ].bwaMemModules
       }
     }
 
@@ -112,7 +148,11 @@ workflow ichorCNA {
     input:
       outputFileNamePrefix=outputFileNamePrefix,
       chrs=runReadCounter.ichorCNAchrs,
-      wig=runReadCounter.wig
+      wig=runReadCounter.wig,
+      gcWig = resources [ reference ].gcWig,
+      mapWig = resources [ reference ].mapWig,
+      normalPanel = resources [ reference ].normalPanel,
+      centromere = resources [ reference ].centromere
   }
 
   call bamQC.bamQC {
@@ -400,11 +440,11 @@ task runIchorCNA {
     String outputFileNamePrefix
     File wig
     File? normalWig
-    String gcWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"
-    String mapWig = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"
-    String normalPanel = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds"
+    String gcWig
+    String mapWig
+    String normalPanel
     String? exonsBed
-    String centromere = "$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
+    String centromere
     Float? minMapScore
     Int? rmCentromereFlankLength
     String normal = "\"c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)\""
