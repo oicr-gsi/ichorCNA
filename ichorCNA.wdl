@@ -9,10 +9,6 @@ struct InputGroup {
   String readGroups
 }
 
-struct PdfOutput {
-  Array[Pair[File,Map[String,String]]]+ pdfs
-}
-
 struct ichorCNAResources {
     String gcWig
     String mapWig
@@ -21,6 +17,10 @@ struct ichorCNAResources {
     String ichorCNAModules
     String bwaMemModules
     String bwaRef
+}
+
+struct PdfOutput {
+  Array[Pair[File,Map[String,String]]]+ pdfs
 }
 
 
