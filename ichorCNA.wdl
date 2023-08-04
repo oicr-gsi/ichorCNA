@@ -14,7 +14,6 @@ struct ichorCNAResources {
     String mapWig
     String normalPanel
     String centromere
-    String ichorCNAModules
     String bwaMemModules
     String bwaRef
 }
