@@ -151,7 +151,8 @@ workflow ichorCNA {
       gcWig = resources [ reference ].gcWig,
       mapWig = resources [ reference ].mapWig,
       normalPanel = resources [ reference ].normalPanel,
-      centromere = resources [ reference ].centromere
+      centromere = resources [ reference ].centromere,
+      genomeBuild=reference
   }
 
   call bamQC.bamQC {
@@ -463,7 +464,7 @@ task runIchorCNA {
     String? chrNormalize
     String chrTrain = "\"c(1:22)\""
     Array[String] chrs
-    String? genomeBuild
+    String genomeBuild
     String? genomeStyle
     Boolean? normalizeMaleX
     Float? fracReadsInChrYForMale
