@@ -362,7 +362,7 @@
     "description": "ichorCNA workflow test, using one bam as input",
     "arguments": {
       "ichorCNA.bamQC.bamQCMetrics_refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
-      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,SW,WG.hg38.bed",
+      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,PG,SW,WG.hg38.bed",
       "ichorCNA.bamQC.metadata": {
         "lane": "1",
         "donor": "TGL48_0001",
