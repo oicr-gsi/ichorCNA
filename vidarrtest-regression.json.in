@@ -166,12 +166,6 @@
           "readGroups": "'@RG\\tID:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tLB:TGL49_0083_Ov_P_PE_321_WG\\tPL:ILLUMINA\\tPU:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tSM:TGL49_0083_Ov_P_210913WG'"
         }
       ],
-      "ichorCNA.gcWig": null,
-      "ichorCNA.mapWig": null,
-      "ichorCNA.normalPanel": null,
-      "ichorCNA.centromere": null,
-      "ichorCNA.bwaMemModules": null,
-      "ichorCNA.bwaRef": null,
       "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
       "ichorCNA.outputFileNamePrefix": "TGL49_0083_Ov_P_PE_321_WG",
@@ -510,12 +504,6 @@
           "type": "EXTERNAL"
         }
       ],
-      "ichorCNA.gcWig": null,
-      "ichorCNA.mapWig": null,
-      "ichorCNA.normalPanel": null,
-      "ichorCNA.centromere": null,
-      "ichorCNA.bwaMemModules": null,
-      "ichorCNA.bwaRef": null,
       "ichorCNA.inputBamMerge.jobMemory": null,
       "ichorCNA.inputBamMerge.modules": null,
       "ichorCNA.inputBamMerge.timeout": null,
