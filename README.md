@@ -32,6 +32,7 @@ Parameter|Value|Description
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
 `provisionBam`|Boolean|Boolean, to provision out bam file and coverage metrics
 `inputType`|String|one of either fastq or bam
+`reference`|String|Genome build (e.g. "hg19" or "hg38")
 `bwaMem.runBwaMem_bwaRef`|String|The reference genome to align the sample with by BWA
 `bwaMem.runBwaMem_modules`|String|Required environment modules
 `bamQC.bamQCMetrics_workflowVersion`|String|Workflow version string
@@ -98,11 +99,11 @@ Parameter|Value|Default|Description
 `runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
-`runIchorCNA.gcWig`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/gc_hg19_1000kb.wig"|GC-content WIG file.
-`runIchorCNA.mapWig`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/map_hg19_1000kb.wig"|Mappability score WIG file. Default: [NULL].
-`runIchorCNA.normalPanel`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds"|Median corrected depth from panel of normals. Default: [NULL].
+`runIchorCNA.gcWig`|String|None|GC-content WIG file.
+`runIchorCNA.mapWig`|String|None|Mappability score WIG file. Default: [NULL].
+`runIchorCNA.normalPanel`|String|None|Median corrected depth from panel of normals. Default: [NULL].
 `runIchorCNA.exonsBed`|String?|None|Bed file containing exon regions. Default: [NULL].
-`runIchorCNA.centromere`|String|"$ICHORCNA_ROOT/lib/R/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"|File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package.
+`runIchorCNA.centromere`|String|None|File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package.
 `runIchorCNA.minMapScore`|Float?|None|Include bins with a minimum mappability score of this value. Default: [0.9].
 `runIchorCNA.rmCentromereFlankLength`|Int?|None|Length of region flanking centromere to remove. Default: [1e+05].
 `runIchorCNA.normal`|String|"\"c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)\""|Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [0.5]
@@ -121,7 +122,7 @@ Parameter|Value|Default|Description
 `runIchorCNA.altFracThreshold`|Float?|None|Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [0.05].
 `runIchorCNA.chrNormalize`|String?|None|Specify chromosomes to normalize GC/mappability biases. Default: [c(1:22)].
 `runIchorCNA.chrTrain`|String|"\"c(1:22)\""|Specify chromosomes to estimate params. Default: [c(1:22)].
-`runIchorCNA.genomeBuild`|String?|None|Genome build. Default: [hg19].
+`runIchorCNA.genomeBuild`|String?|None|Genome build.
 `runIchorCNA.genomeStyle`|String?|None|NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have "chr" string. [Default: NCBI].
 `runIchorCNA.normalizeMaleX`|Boolean?|None|If male, then normalize chrX by median. Default: [TRUE].
 `runIchorCNA.fracReadsInChrYForMale`|Float?|None|Threshold for fraction of reads in chrY to assign as male. Default: [0.001].
