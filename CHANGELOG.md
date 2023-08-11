@@ -1,3 +1,6 @@
+## 1.2.0 - 2023-08-10
+- Assembly-specific modules are specified inside the workflow
+
 ## 1.1.2 - 2023-04-12
 - Update the pdfs provisioned out
 
