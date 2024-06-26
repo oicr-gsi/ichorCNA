@@ -224,21 +224,63 @@ workflow ichorCNA {
       }
     ]
     output_meta: {
-      pdf: "Annotations for pdf files produced by ichorCNA, each pdf is annotated with the tumor fraction, ploidy for the selected solution.",
-      bam: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
-      bamIndex: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
-      bamQCresult: "bamQC report.",
-      jsonMetrics: "Report on bam coverage, read counts and ichorCNA metrics.",
-      segments: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
-      segmentsWithSubclonalStatus: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
-      estimatedCopyNumber: "Estimated copy number, log ratio, and subclone status for each bin/window.",
-      convergedParameters: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
-      correctedDepth: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
-      rData: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
-      plots: "Archived directory of plots.",
-      genomeWideAll: "Genome wide plots for each solution",
-      genomeWide: "Genome wide plots for the selected solution"
+    pdf: {
+        description: "Annotations for pdf files produced by ichorCNA, each pdf is annotated with the tumor fraction, ploidy for the selected solution.",
+        vidarr_label: "pdf"
+    },
+    bam: {
+        description: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
+        vidarr_label: "bam"
+    },
+    bamIndex: {
+        description: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
+        vidarr_label: "bamIndex"
+    },
+    bamQCresult: {
+        description: "bamQC report.",
+        vidarr_label: "bamQCresult"
+    },
+    jsonMetrics: {
+        description: "Report on bam coverage, read counts and ichorCNA metrics.",
+        vidarr_label: "jsonMetrics"
+    },
+    segments: {
+        description: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
+        vidarr_label: "segments"
+    },
+    segmentsWithSubclonalStatus: {
+        description: "Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.",
+        vidarr_label: "segmentsWithSubclonalStatus"
+    },
+    estimatedCopyNumber: {
+        description: "Estimated copy number, log ratio, and subclone status for each bin/window.",
+        vidarr_label: "estimatedCopyNumber"
+    },
+    convergedParameters: {
+        description: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.",
+        vidarr_label: "convergedParameters"
+    },
+    correctedDepth: {
+        description: "Log2 ratio of each bin/window after correction for GC and mappability biases.",
+        vidarr_label: "correctedDepth"
+    },
+    rData: {
+        description: "Saved R image after ichorCNA has finished. Results for all solutions will be included.",
+        vidarr_label: "rData"
+    },
+    plots: {
+        description: "Archived directory of plots.",
+        vidarr_label: "plots"
+    },
+    genomeWideAll: {
+        description: "Genome wide plots for each solution",
+        vidarr_label: "genomeWideAll"
+    },
+    genomeWide: {
+        description: "Genome wide plots for the selected solution",
+        vidarr_label: "genomeWide"
     }
+  }
   }
 }
 
