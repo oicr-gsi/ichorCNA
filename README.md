@@ -32,9 +32,7 @@ Parameter|Value|Description
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
 `provisionBam`|Boolean|Boolean, to provision out bam file and coverage metrics
 `inputType`|String|one of either fastq or bam
-`reference`|String|Genome build (e.g. "hg19" or "hg38")
-`bwaMem.runBwaMem_bwaRef`|String|The reference genome to align the sample with by BWA
-`bwaMem.runBwaMem_modules`|String|Required environment modules
+`reference`|String|The genome reference build. for example: hg19, hg38
 `bamQC.bamQCMetrics_workflowVersion`|String|Workflow version string
 `bamQC.bamQCMetrics_refSizesBed`|String|Path to human genome BED reference with chromosome sizes
 `bamQC.bamQCMetrics_refFasta`|String|Path to human genome FASTA reference
@@ -99,11 +97,7 @@ Parameter|Value|Default|Description
 `runReadCounter.modules`|String|"samtools/1.9 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
-`runIchorCNA.gcWig`|String|None|GC-content WIG file.
-`runIchorCNA.mapWig`|String|None|Mappability score WIG file. Default: [NULL].
-`runIchorCNA.normalPanel`|String|None|Median corrected depth from panel of normals. Default: [NULL].
 `runIchorCNA.exonsBed`|String?|None|Bed file containing exon regions. Default: [NULL].
-`runIchorCNA.centromere`|String|None|File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package.
 `runIchorCNA.minMapScore`|Float?|None|Include bins with a minimum mappability score of this value. Default: [0.9].
 `runIchorCNA.rmCentromereFlankLength`|Int?|None|Length of region flanking centromere to remove. Default: [1e+05].
 `runIchorCNA.normal`|String|"\"c(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)\""|Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [0.5]
@@ -122,7 +116,6 @@ Parameter|Value|Default|Description
 `runIchorCNA.altFracThreshold`|Float?|None|Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [0.05].
 `runIchorCNA.chrNormalize`|String?|None|Specify chromosomes to normalize GC/mappability biases. Default: [c(1:22)].
 `runIchorCNA.chrTrain`|String|"\"c(1:22)\""|Specify chromosomes to estimate params. Default: [c(1:22)].
-`runIchorCNA.genomeBuild`|String|None|Genome build.
 `runIchorCNA.genomeStyle`|String?|None|NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have "chr" string. [Default: NCBI].
 `runIchorCNA.normalizeMaleX`|Boolean?|None|If male, then normalize chrX by median. Default: [TRUE].
 `runIchorCNA.fracReadsInChrYForMale`|Float?|None|Threshold for fraction of reads in chrY to assign as male. Default: [0.001].
@@ -214,39 +207,41 @@ Parameter|Value|Default|Description
 
 ### Outputs
 
-Output | Type | Description
----|---|---
-`genomeWideAll`|Pair[File,Map[String,String]]|Genome wide plots for each solution
-`genomeWide`|Pair[File,Map[String,String]]|Genome wide plots for the selected solution
-`bam`|File?|Bam file used as input to ichorCNA (only produced when provisionBam is True)
-`bamIndex`|File?|Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)
-`jsonMetrics`|File|Report on bam coverage, read counts and ichorCNA metrics.
-`segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.
-`segmentsWithSubclonalStatus`|File|Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.
-`estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.
-`convergedParameters`|File|Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.
-`correctedDepth`|File|Log2 ratio of each bin/window after correction for GC and mappability biases.
-`rData`|File|Saved R image after ichorCNA has finished. Results for all solutions will be included.
-`plots`|File|Archived directory of plots.
-`bamQCresult`|File|bamQC report.
+Output | Type | Description | Labels
+---|---|---|---
+`genomeWideAll`|Pair[File,Map[String,String]]|Genome wide plots for each solution|
+`genomeWide`|Pair[File,Map[String,String]]|Genome wide plots for the selected solution|
+`bam`|File?|Bam file used as input to ichorCNA (only produced when provisionBam is True)|vidarr_label: bam
+`bamIndex`|File?|Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)|vidarr_label: bamIndex
+`jsonMetrics`|File|Report on bam coverage, read counts and ichorCNA metrics.|vidarr_label: jsonMetrics
+`segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.|vidarr_label: segments
+`segmentsWithSubclonalStatus`|File|Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.|vidarr_label: segmentsWithSubclonalStatus
+`estimatedCopyNumber`|File|Estimated copy number, log ratio, and subclone status for each bin/window.|vidarr_label: estimatedCopyNumber
+`convergedParameters`|File|Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions.|vidarr_label: convergedParameters
+`correctedDepth`|File|Log2 ratio of each bin/window after correction for GC and mappability biases.|vidarr_label: correctedDepth
+`rData`|File|Saved R image after ichorCNA has finished. Results for all solutions will be included.|vidarr_label: rData
+`plots`|File|Archived directory of plots.|vidarr_label: plots
+`bamQCresult`|File|bamQC report.|vidarr_label: bamQCresult
 
 
 ## Commands
- This section lists command(s) run by ichorCNA workflow
+This section lists command(s) run by ichorCNA workflow
  
- * Running ichorCNA workflow
+* Running ichorCNA workflow
  
- IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
  
- MERGE BAMS
- ```
+### MERGE BAMS
+
+```
  samtools merge \
  -c \
  ~{resultMergedBam} \
  ~{sep=" " bams}
- ```
- COLLECT PRE-MERGE BAM METRICS
- ```
+```
+ 
+### COLLECT PRE-MERGE BAM METRICS
+```
  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
  for file in ~{sep=' ' bam}
  do
@@ -254,13 +249,14 @@ Output | Type | Description
    read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
  done;
- ``` 
- INDEX BAM
- ```
+``` 
+### INDEX BAM
+```
  samtools index ~{inputbam} ~{resultBai}
- ```
- READCOUNTER
-  ```
+```
+### READCOUNTER
+
+```
  samtools index ~{bam}
  
  # calculate chromosomes to analyze (with reads) from input data
@@ -276,9 +272,9 @@ Output | Type | Description
  --quality ~{minimumMappingQuality} \
  --chromosome "${CHROMOSOMES_WITH_READS}" \
  ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
-  ```
- RUN ICHORCNA
-  ```
+```
+### RUN ICHORCNA
+```
      runIchorCNA \
      --WIG ~{wig} \
      ~{"--NORMWIG " + normalWig} \
@@ -324,9 +320,9 @@ Output | Type | Description
  
      #create txt file with plot full path
      ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
-  ```
-  COLLECT FINAL BAM AND ICHORCNA METRICS
-  ```
+```
+###  COLLECT FINAL BAM AND ICHORCNA METRICS
+```
   echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
   coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
   read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
@@ -334,9 +330,9 @@ Output | Type | Description
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
   cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
-  ```
- CREATE JSON WITH METRICS COLLECTED
- ```
+```
+### CREATE JSON WITH METRICS COLLECTED
+```
  python3 <<CODE
  import csv, json
  import pandas as pd
@@ -386,13 +382,14 @@ Output | Type | Description
  ### create json output file for annotations
  output_list = []
  for line in lines:
-    pdf_dict = {}
-    line = line.strip()
-    pdf_dict["left"] = line
-    pdf_dict["right"] = {}
-    pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
-    pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
-    output_list.append(pdf_dict)
+     print(line)
+     pdf_dict = {}
+     line = line.strip()
+     pdf_dict["left"] = line
+     pdf_dict["right"] = {}
+     pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+     pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
+     output_list.append(pdf_dict)
  output_dict = {}
  output_dict["pdfs"] = output_list
  
@@ -400,8 +397,8 @@ Output | Type | Description
      json.dump(output_dict, outPdfJson)
  
  CODE
- ```
- ## Support
+```
+## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 
