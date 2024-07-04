@@ -272,14 +272,8 @@ workflow ichorCNA {
         description: "Archived directory of plots.",
         vidarr_label: "plots"
     },
-    genomeWideAll: {
-        description: "Genome wide plots for each solution",
-        vidarr_label: "genomeWideAll"
-    },
-    genomeWide: {
-        description: "Genome wide plots for the selected solution",
-        vidarr_label: "genomeWide"
-    }
+    genomeWideAll: "Genome wide plots for each solution",
+    genomeWide: "Genome wide plots for the selected solution"
   }
   }
 }
