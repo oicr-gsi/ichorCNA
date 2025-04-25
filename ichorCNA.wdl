@@ -196,7 +196,7 @@ workflow ichorCNA {
   meta {
     author: "Beatriz Lujan Toro"
     email: "beatriz.lujantoro@oicr.on.ca"
-    description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS"
+    description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing."
     dependencies: [
       {
         name: "samtools/1.9",
@@ -208,11 +208,11 @@ workflow ichorCNA {
       },
       {
         name: "hmmcopy-utils/0.1.1",
-        url: "https://github.com/broadinstitute/ichorCNA"
+        url: "https://shahlab.ca/projects/hmmcopy_utils/"
       },
       {
         name: "ichorcna/0.2",
-        url: "https://shahlab.ca/projects/hmmcopy_utils/"
+        url: "https://github.com/broadinstitute/ichorCNA"
       },
       {
         name: "python/3.9",
