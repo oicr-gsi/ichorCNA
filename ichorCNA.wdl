@@ -434,7 +434,7 @@ task runReadCounter {
     samtools index ~{bam}
 
     # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep ~{chromosomesToAnalyze} | paste -s -d, -)
+    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep -Ew \'$(tr ',' '|'  ~{chromosomesToAnalyze})\' | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
     # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
