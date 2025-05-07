@@ -1,52 +1,58 @@
 ## Commands
-This section lists command(s) run by ichorCNA workflow
+This section lists command(s) run by WORKFLOW workflow
 
-* Running ichorCNA workflow
+* Running WORKFLOW
 
-IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+=== Description here ===.
 
-MERGE BAMS
 ```
-samtools merge \
--c \
-~{resultMergedBam} \
-~{sep=" " bams}
+      set -euo pipefail
+      samtools merge \
+      -c \
+      ~{resultMergedBam} \
+      ~{sep=" " bams}
 ```
 
-COLLECT PRE-MERGE BAM METRICS
 ```
-echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-for file in ~{sep=' ' bam}
-do
-  run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
-  read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
-  echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-done;
-``` 
-INDEX BAM
+  set -euo pipefail
+
+  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  for file in ~{sep=' ' bam}
+  do
+    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+    read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
+    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  done;
+
 ```
-samtools index ~{inputbam} ~{resultBai}
+
 ```
-READCOUNTER
- ```
-samtools index ~{bam}
+  samtools index ~{inputbam} ~{resultBai}
+```
 
-# calculate chromosomes to analyze (with reads) from input data
-CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+```
+    set -euo pipefail
 
-# write out a chromosomes with reads for ichorCNA
-# split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
-echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+    samtools index ~{bam}
 
-# convert
-readCounter \
---window ~{windowSize} \
---quality ~{minimumMappingQuality} \
---chromosome "${CHROMOSOMES_WITH_READS}" \
-~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
- ```
-RUN ICHORCNA
- ```
+    # calculate chromosomes to analyze (with reads) from input data
+    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep {chromosomesToAnalyze} | paste -s -d, -)
+
+    # write out a chromosomes with reads for ichorCNA
+    # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+
+    # convert
+    readCounter \
+    --window ~{windowSize} \
+    --quality ~{minimumMappingQuality} \
+    --chromosome "${CHROMOSOMES_WITH_READS}" \
+    ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+```
+
+```
+    set -euo pipefail
+
     runIchorCNA \
     --WIG ~{wig} \
     ~{"--NORMWIG " + normalWig} \
@@ -91,82 +97,86 @@ RUN ICHORCNA
     tar -zcvf "~{outputFileNamePrefix}_plots.tar.gz" "~{outputFileNamePrefix}"
 
     #create txt file with plot full path
-    ls $PWD/~{outputFileNamePrefix}/*genomeWide_n* > "~{outputFileNamePrefix}"_plots.txt
- ```
- COLLECT FINAL BAM AND ICHORCNA METRICS
- ```
- echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
- coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
- read_count=$(samtools stats ~{inputbam} | head -n 8 | tail -n 1 | cut -f 3)
- tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
- ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
- echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
- cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
- ```
-CREATE JSON WITH METRICS COLLECTED
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide_all_sols.pdf > "~{outputFileNamePrefix}"_plots.txt
+    ls $PWD/~{outputFileNamePrefix}/*genomeWide.pdf >> "~{outputFileNamePrefix}"_plots.txt
 ```
-python3 <<CODE
-import csv, json
-import pandas as pd
 
-### create json file with all metrics
+```
+  set -euo pipefail
 
-bam_metric = pd.read_csv("~{bamMetrics}")
-pre_metric = pd.read_csv("~{preBamMetrics}")
-all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
-all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
-all_sols["solution"] = all_sols["init"]
-pre_metric_dict = pre_metric.to_dict('index')
-bam_metric_dict = bam_metric.to_dict('records')[0]
-with open("~{plotsFile}") as f:
-  lines = f.readlines()
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  read_count=$(samtools stats ~{inputbam} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+  cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+```
 
-#reorganize lane sequencing data
-lanes = []
-for lane in pre_metric_dict:
-  lanes.append(pre_metric_dict[lane])
+```
+    set -euo pipefail
 
-#find selected solution
-selected_sol = ""
-for index, row in all_sols.iterrows():
-  if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
-    selected_sol = row["init"]
+    python3 <<CODE
+    import csv, json
+    import pandas as pd
 
-#selecting metrics from all solutions
-all_sols_metrics = {}
-for index, row in all_sols.iterrows():
-  all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
-                                      "ploidy":row["phi_est"],
-                                      "loglik":row["loglik"]}
+    ### create json file with all metrics
 
-metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
-                "total_reads": bam_metric_dict["read_count"],
-                "lanes_sequenced": len(pre_metric_dict),
-                "reads_per_lane":lanes,
-                "best_solution": selected_sol,
-                "tumor_fraction": bam_metric_dict["tumor_fraction"],
-                "ploidy": bam_metric_dict["ploidy"],
-                "solutions": all_sols_metrics}
+    bam_metric = pd.read_csv("~{bamMetrics}")
+    pre_metric = pd.read_csv("~{preBamMetrics}")
+    all_sols = pd.read_csv("~{allSolsMetrics}", sep="\t")
+    all_sols["tumor_fraction"] = round(1 - all_sols["n_est"],3)
+    all_sols["solution"] = all_sols["init"]
+    pre_metric_dict = pre_metric.to_dict('index')
+    bam_metric_dict = bam_metric.to_dict('records')[0]
+    with open("~{plotsFile}") as f:
+      lines = f.readlines()
 
-with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
-  json.dump(metrics_dict, outfile)
+    #reorganize lane sequencing data
+    lanes = []
+    for lane in pre_metric_dict:
+      lanes.append(pre_metric_dict[lane])
 
-### create json output file for annotations
-output_list = []
-for line in lines:
-    print(line)
-    pdf_dict = {}
-    line = line.strip()
-    pdf_dict["left"] = line
-    pdf_dict["right"] = {}
-    pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
-    pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
-    output_list.append(pdf_dict)
-output_dict = {}
-output_dict["pdfs"] = output_list
+    #find selected solution
+    selected_sol = ""
+    for index, row in all_sols.iterrows():
+      if round(row["tumor_fraction"],2) == round(bam_metric_dict["tumor_fraction"],2) and row["phi_est"] == bam_metric_dict["ploidy"]:
+        selected_sol = row["init"]
 
-with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
-    json.dump(output_dict, outPdfJson)
+    #selecting metrics from all solutions
+    all_sols_metrics = {}
+    for index, row in all_sols.iterrows():
+      all_sols_metrics[row["solution"]] = {"tumor_fraction":row["tumor_fraction"],
+                                           "ploidy":row["phi_est"],
+                                           "loglik":row["loglik"]}
 
-CODE
+    metrics_dict = {"mean_coverage": bam_metric_dict["coverage"],
+                    "total_reads": bam_metric_dict["read_count"],
+                    "lanes_sequenced": len(pre_metric_dict),
+                    "reads_per_lane":lanes,
+                    "best_solution": selected_sol,
+                    "tumor_fraction": bam_metric_dict["tumor_fraction"],
+                    "ploidy": bam_metric_dict["ploidy"],
+                    "solutions": all_sols_metrics}
+
+    with open("~{outputFileNamePrefix}_metrics.json", "w") as outfile:
+      json.dump(metrics_dict, outfile)
+
+    ### create json output file for annotations
+    output_list = []
+    for line in lines:
+      pdf_dict = {}
+      line = line.strip()
+      pdf_dict["left"] = line
+      pdf_dict["right"] = {}
+      pdf_dict["right"]["tumor_fraction"] = bam_metric_dict["tumor_fraction"]
+      pdf_dict["right"]["ploidy"] = bam_metric_dict["ploidy"]
+      output_list.append(pdf_dict)
+    output_dict = {}
+    output_dict["pdfs"] = output_list
+
+    with open("~{outputFileNamePrefix}_outputs.json", "w") as outPdfJson:
+        json.dump(output_dict, outPdfJson)
+
+    CODE
 ```

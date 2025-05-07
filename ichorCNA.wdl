@@ -55,7 +55,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "bwaMemModules": "samtools/1.9 bwa/0.7.12 hg19-bwa-index/0.7.12",
+      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg19-bwa-index/0.7.12",
       "bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa"
     },
     "hg38": {
@@ -63,7 +63,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "bwaMemModules": "samtools/1.9 bwa/0.7.12 hg38-bwa-index-with-alt/0.7.12",
+      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg38-bwa-index-with-alt/0.7.12",
       "bwaRef": "$HG38_BWA_INDEX_WITH_ALT_ROOT/hg38_random.fa"
     }
   }
@@ -199,10 +199,6 @@ workflow ichorCNA {
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing."
     dependencies: [
       {
-        name: "samtools/1.9",
-        url: "http://www.htslib.org/"
-      },
-      {
         name: "samtools/1.14",
         url: "http://www.htslib.org/"
       },
@@ -284,7 +280,7 @@ task bamMerge{
     Array[File] bams
     String outputFileNamePrefix
     Int   jobMemory = 32
-    String modules  = "samtools/1.9"
+    String modules  = "samtools/1.14"
     Int timeout     = 72
   }
   parameter_meta {
@@ -373,7 +369,7 @@ task indexBam {
   input {
     File inputbam
     Int jobMemory = 8
-    String modules = "samtools/1.9"
+    String modules = "samtools/1.14"
     Int timeout = 12
   }
 
@@ -417,7 +413,7 @@ task runReadCounter {
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Int mem = 8
-    String modules = "samtools/1.9 hmmcopy-utils/0.1.1"
+    String modules = "samtools/1.14 hmmcopy-utils/0.1.1"
     Int timeout = 12
   }
 
@@ -438,7 +434,7 @@ task runReadCounter {
     samtools index ~{bam}
 
     # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_WITH_READS=$(samtools view ~{bam} $(tr ',' ' ' <<< ~{chromosomesToAnalyze}) | cut -f3 | sort -V | uniq | paste -s -d, -)
+    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep -Ew $(tr ',' '|' <<<  '~{chromosomesToAnalyze}') | paste -s -d, -)
 
     # write out a chromosomes with reads for ichorCNA
     # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
