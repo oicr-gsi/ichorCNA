@@ -1,16 +1,16 @@
 [
   {
-    "id": "TGL49_0083",
+    "id": "Test1",
     "description": "ichorCNA workflow test, one fastq pair",
     "arguments": {
       "ichorCNA.bamQC.bamQCMetrics_refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
-      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,PG,SW,WG.hg38.bed",
+      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsi/testdata/ichorCNA/test_inputs/ALL.AS,CH,CM,NN,PG,SW,WG.hg38.bed",
       "ichorCNA.bamQC.metadata": {
         "lane": "1",
-        "donor": "TGL49_0083",
-        "sample": "TGL49_0083_Ov_P_PE_321_WG",
+        "donor": "TGL_Test",
+        "sample": "TGL_Test_WG",
         "barcode": "AACTGAGC-CAATCAGG",
-        "library": "TGL49_0083_Ov_P_PE_321_WG",
+        "library": "TGL_WG",
         "group id": "",
         "run name": "NB551051_0240_AH5GMGBGXK",
         "instrument": "Illumina NextSeq",
@@ -141,7 +141,7 @@
         {
           "fastqR1": {
             "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0083_Ov_P_PE_321_WG_210927_NB551051_0240_AH5GMGBGXK_1_AACTGAGC-CAATCAGG_R1.fastq.gz",
+              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/test_inputs/Test_R1.fastq.gz",
               "externalIds": [
                 {
                   "id": "TEST",
@@ -153,7 +153,7 @@
           },
           "fastqR2": {
             "contents": {
-              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL49_0083_Ov_P_PE_321_WG_210927_NB551051_0240_AH5GMGBGXK_1_AACTGAGC-CAATCAGG_R2.fastq.gz",
+              "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/test_inputs/Test_R2.fastq.gz",
               "externalIds": [
                 {
                   "id": "TEST",
@@ -163,12 +163,12 @@
             },
             "type": "EXTERNAL"
           },
-          "readGroups": "'@RG\\tID:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tLB:TGL49_0083_Ov_P_PE_321_WG\\tPL:ILLUMINA\\tPU:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tSM:TGL49_0083_Ov_P_210913WG'"
+          "readGroups": "'@RG\\tID:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tLB:TGL_WG\\tPL:ILLUMINA\\tPU:210927_NB551051_0240_AH5GMGBGXK-AACTGAGC-CAATCAGG_1\\tSM:TGLWG'"
         }
       ],
       "ichorCNA.inputType":"fastq",
       "ichorCNA.minimumMappingQuality": 20,
-      "ichorCNA.outputFileNamePrefix": "TGL49_0083_Ov_P_PE_321_WG",
+      "ichorCNA.outputFileNamePrefix": "TGL_Test_WG",
       "ichorCNA.reference": "hg38",
       "ichorCNA.preMergeBamMetrics.bam": null,
       "ichorCNA.preMergeBamMetrics.outputFileNamePrefix": null,
@@ -230,7 +230,7 @@
       "ichorCNA.bam": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -238,7 +238,7 @@
       "ichorCNA.bamQCresult": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -246,7 +246,7 @@
       "ichorCNA.bamIndex": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -254,7 +254,7 @@
       "ichorCNA.convergedParameters": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -262,7 +262,7 @@
       "ichorCNA.correctedDepth": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -270,7 +270,7 @@
       "ichorCNA.coverageReport": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -278,7 +278,7 @@
       "ichorCNA.estimatedCopyNumber": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -286,7 +286,7 @@
       "ichorCNA.jsonMetrics": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -294,7 +294,7 @@
       "ichorCNA.pdfs": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -302,7 +302,7 @@
       "ichorCNA.plots": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -310,7 +310,7 @@
       "ichorCNA.rData": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -318,7 +318,7 @@
       "ichorCNA.segments": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -326,7 +326,7 @@
       "ichorCNA.segmentsWithSubclonalStatus": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -334,7 +334,7 @@
       "ichorCNA.genomeWideAll": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -342,7 +342,7 @@
       "ichorCNA.genomeWide": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL49_0083_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test1_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -352,23 +352,23 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL49_0083.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/workflow_test_01.metrics",
         "type": "script"
       }
     ]
   },
   {
-    "id": "TGL48_0001",
+    "id": "Test2",
     "description": "ichorCNA workflow test, using one bam as input",
     "arguments": {
       "ichorCNA.bamQC.bamQCMetrics_refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
-      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/blujantoro/tools-resources/interval-files/standard/ALL.AS,CH,CM,NN,PG,SW,WG.hg38.bed",
+      "ichorCNA.bamQC.bamQCMetrics_refSizesBed": "/.mounts/labs/gsi/testdata/ichorCNA/test_inputs/ALL.AS,CH,CM,NN,PG,SW,WG.hg38.bed",
       "ichorCNA.bamQC.metadata": {
         "lane": "1",
-        "donor": "TGL48_0001",
-        "sample": "TGL48_0001_Ct_T_PE_312_WG",
+        "donor": "TGL_Test",
+        "sample": "TGL_Test_WG",
         "barcode": "CTTGTCGA-CGATGTTC",
-        "library": "TGL48_0001_Ct_T_PE_312_WG",
+        "library": "TGL_WG",
         "group id": "",
         "run name": "201130_NB551051_0196_AH3GGWBGXH",
         "instrument": "Illumina NextSeq",
@@ -494,7 +494,7 @@
       "ichorCNA.inputBam": [
         {
           "contents": {
-            "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/input_data/TGL48_0001_Ct_T_PE_312_WG_UMB-001-6M-P_INPUT_201130_NB551051_0196_AH3GGWBGXH_1_CTTGTCGA-CGATGTTC.bam",
+            "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/test_inputs/Test.bam",
             "externalIds": [
               {
                 "id": "TEST",
@@ -511,7 +511,7 @@
       "ichorCNA.inputGroups": null,
       "ichorCNA.inputType":"bam",
       "ichorCNA.minimumMappingQuality": 20,
-      "ichorCNA.outputFileNamePrefix": "TGL48_0001_Ct_T_PE_312_WG",
+      "ichorCNA.outputFileNamePrefix": "TGL_Test_WG",
       "ichorCNA.reference": "hg38",
       "ichorCNA.preMergeBamMetrics.jobMemory": null,
       "ichorCNA.preMergeBamMetrics.modules": null,
@@ -573,7 +573,7 @@
       "ichorCNA.bam": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -581,7 +581,7 @@
       "ichorCNA.bamQCresult": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -589,7 +589,7 @@
       "ichorCNA.bamIndex": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -597,7 +597,7 @@
       "ichorCNA.convergedParameters": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -605,7 +605,7 @@
       "ichorCNA.correctedDepth": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -613,7 +613,7 @@
       "ichorCNA.coverageReport": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -621,7 +621,7 @@
       "ichorCNA.estimatedCopyNumber": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -629,7 +629,7 @@
       "ichorCNA.jsonMetrics": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -637,7 +637,7 @@
       "ichorCNA.pdfs": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -645,7 +645,7 @@
       "ichorCNA.plots": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -653,7 +653,7 @@
       "ichorCNA.rData": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -661,7 +661,7 @@
       "ichorCNA.segments": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -669,7 +669,7 @@
       "ichorCNA.segmentsWithSubclonalStatus": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -677,7 +677,7 @@
       "ichorCNA.genomeWideAll": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -685,7 +685,7 @@
       "ichorCNA.genomeWide": {
         "contents": [
           {
-            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_TGL48_0001_@JENKINSID@"
+            "outputDirectory": "@SCRATCH@/@DATE@_Workflow_ichorCNA_Test2_@JENKINSID@"
           }
         ],
         "type": "ALL"
@@ -695,7 +695,7 @@
       {
         "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
         "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/TGL48_0001.metrics",
+        "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.0/workflow_test_02.metrics",
         "type": "script"
       }
     ]
