@@ -468,7 +468,7 @@
       "ichorCNA.bwaMem.numChunk": null,
       "ichorCNA.bwaMem.outputFileNamePrefix": null,
       "ichorCNA.bwaMem.runBwamem2_addParam": null,
-      "ichorCNA.bwaMem.runBwamem2_bwaRef": "",
+      "ichorCNA.bwaMem.runBwamem2_bwa2Ref": "",
       "ichorCNA.bwaMem.runBwamem2_jobMemory": null,
       "ichorCNA.bwaMem.runBwamem2_modules": "",
       "ichorCNA.bwaMem.runBwamem2_threads": null,

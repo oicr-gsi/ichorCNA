@@ -4,6 +4,7 @@ workflow bwamem2 {
     input {
         File fastqR1
         File? fastqR2
+        String readGroups
         String outputFileNamePrefix
         Int numChunk = 1
         Boolean doUMIextract = false
@@ -98,6 +99,7 @@ workflow bwamem2 {
                 input: 
                 read1s = select_first([adapterTrimming.resultR1, extractUMIs.fastqR1, p.left]),
                 read2s = if (defined(fastqR2)) then select_first([adapterTrimming.resultR2, extractUMIs.fastqR2, p.right]) else fastqR2,
+                readGroups = readGroups,
                 modules = bwamem2_modules,
                 bwa2Ref = bwamem2_ref
         }    
