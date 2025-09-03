@@ -76,10 +76,12 @@ workflow ichorCNA {
         input:
           fastqR1 = ig.fastqR1,
           fastqR2 = ig.fastqR2,
-          readGroups = ig.readGroups,
+          runBwamem2_readGroups = ig.readGroups,
           doTrim = false,
           outputFileNamePrefix = outputFileNamePrefix,
           reference = reference,
+          runBwamem2_bwa2ref = resources [ reference ].bwaRef
+          runBwamem2_modules = resources [ reference ].bwaMemModules
           numChunk = 1,
           doUMIextract = false
       }
@@ -87,21 +89,21 @@ workflow ichorCNA {
 
     call preMergeBamMetrics as preMergeBamMetricsFastqInput{
       input:
-        bam = bwaMem.bwamem2.bwamem2Bam,
+        bam = bwamem2.bwamem2Bam,
         outputFileNamePrefix = outputFileNamePrefix
     }
 
     if (length(inputGroups_) > 1 ) {
       call bamMerge {
         input:
-          bams = bwaMem.bwamem2.bwamem2Bam,
+          bams = bwamem2.bwamem2Bam,
           outputFileNamePrefix = outputFileNamePrefix
       }
       #get reads of each input file
     }
 
     if (length(inputGroups_) == 1 ) {
-      File bwaMemBam = bwaMem.bwamem2.bwamem2Bam[0]
+      File bwamem2Bam = bwamem2.bwamem2Bam[0]
     }
 
   }
@@ -131,13 +133,13 @@ workflow ichorCNA {
   if(provisionBam==true){
     call indexBam {
       input:
-        inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam])
+        inputbam = select_first([bamMerge.outputMergedBam,bwamem2Bam,inputBamMerge.outputMergedBam,singleInputBam])
     }
   }
 
   call runReadCounter{
     input:
-      bam= select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      bam= select_first([bamMerge.outputMergedBam,bwamem2Bam,inputBamMerge.outputMergedBam,singleInputBam]),
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -158,13 +160,13 @@ workflow ichorCNA {
 
   call bamQC.bamQC {
     input:
-        bamFile = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+        bamFile = select_first([bamMerge.outputMergedBam,bwamem2Bam,inputBamMerge.outputMergedBam,singleInputBam]),
         outputFileNamePrefix = outputFileNamePrefix
   }
 
   call getMetrics {
     input:
-      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      inputbam = select_first([bamMerge.outputMergedBam,bwamem2Bam,inputBamMerge.outputMergedBam,singleInputBam]),
       params = runIchorCNA.convergedParameters,
       outputFileNamePrefix = outputFileNamePrefix
   }
@@ -369,9 +371,9 @@ task preMergeBamMetrics {
 task indexBam {
   input {
     File inputbam
-    Int jobMemory = 8
-    String modules = "samtools/1.14"
-    Int timeout = 12
+    Int jobMemory = 12
+    String modules = "samtools/1.9"
+    Int timeout = 48
   }
 
   parameter_meta {
@@ -384,6 +386,7 @@ task indexBam {
   String resultBai = "~{basename(inputbam)}.bai"
 
   command <<<
+  set -euo pipefail
   samtools index ~{inputbam} ~{resultBai}
   >>>
 
