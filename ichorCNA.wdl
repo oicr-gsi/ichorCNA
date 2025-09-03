@@ -1,6 +1,6 @@
 version 1.0
 
-import "imports/pull_bwa.wdl" as bwaMem
+import "imports/pull_bwamem2.wdl" as bwaMem
 import "imports/pull_bamQC.wdl" as bamQC
 
 struct InputGroup {
@@ -55,16 +55,16 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg19-bwa-index/0.7.12",
-      "bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa"
+      "bwaMemModules": "samtools/1.14 bwa-mem2/2.2.1 hg19-bwamem2-index/2.2.1",
+      "bwaRef": "$HG19_BWAMEM2_INDEX_ROOT/hg19_random.fa"
     },
     "hg38": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg38-bwa-index-with-alt/0.7.12",
-      "bwaRef": "$HG38_BWA_INDEX_WITH_ALT_ROOT/hg38_random.fa"
+      "bwaMemModules": "samtools/1.14 bwa-mem2/2.2.1 hg38-bwamem2-index-with-alt/2.2.1",
+      "bwaRef": "$HG38_BWAMEM2_INDEX_WITH_ALT_ROOT/hg38_random.fa"
     }
   }
 
