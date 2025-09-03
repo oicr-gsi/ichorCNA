@@ -76,11 +76,11 @@ workflow ichorCNA {
         input:
           fastqR1 = ig.fastqR1,
           fastqR2 = ig.fastqR2,
-          readGroups = ig.readGroups,
-          doTrim = true,
+          doTrim = false,
           outputFileNamePrefix = outputFileNamePrefix,
-          runBwaMem_bwaRef = resources [ reference ].bwaRef,
-          runBwaMem_modules = resources [ reference ].bwaMemModules
+          reference = resources[reference].bwaRef,
+          numChunk = 1,
+          doUMIextract = false
       }
     }
 
