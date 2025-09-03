@@ -80,8 +80,8 @@ workflow ichorCNA {
           doTrim = false,
           outputFileNamePrefix = outputFileNamePrefix,
           reference = reference,
-          runBwamem2_bwa2ref = resources [ reference ].bwaRef
-          runBwamem2_modules = resources [ reference ].bwaMemModules
+          runBwamem2_bwa2ref = resources [ reference ].bwaRef,
+          runBwamem2_modules = resources [ reference ].bwaMemModules,
           numChunk = 1,
           doUMIextract = false
       }
