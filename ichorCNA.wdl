@@ -76,9 +76,10 @@ workflow ichorCNA {
         input:
           fastqR1 = ig.fastqR1,
           fastqR2 = ig.fastqR2,
+          readGroups = ig.readGroups,
           doTrim = false,
           outputFileNamePrefix = outputFileNamePrefix,
-          reference = resources[reference].bwaRef,
+          reference = reference,
           numChunk = 1,
           doUMIextract = false
       }
@@ -86,21 +87,21 @@ workflow ichorCNA {
 
     call preMergeBamMetrics as preMergeBamMetricsFastqInput{
       input:
-        bam = bwaMem.bwaMemBam,
+        bam = bwaMem.bwamem2.bwamem2Bam,
         outputFileNamePrefix = outputFileNamePrefix
     }
 
     if (length(inputGroups_) > 1 ) {
       call bamMerge {
         input:
-          bams = bwaMem.bwaMemBam,
+          bams = bwaMem.bwamem2.bwamem2Bam,
           outputFileNamePrefix = outputFileNamePrefix
       }
       #get reads of each input file
     }
 
     if (length(inputGroups_) == 1 ) {
-      File bwaMemBam = bwaMem.bwaMemBam[0]
+      File bwaMemBam = bwaMem.bwamem2.bwamem2Bam[0]
     }
 
   }
