@@ -72,7 +72,7 @@ workflow ichorCNA {
   if(inputType=="fastq" && defined(inputGroups)){
     Array[InputGroup] inputGroups_ = select_first([inputGroups])
     scatter (ig in inputGroups_) {
-      call bwaMem.bwaMem {
+      call bwaMem.bwamem2 {
         input:
           fastqR1 = ig.fastqR1,
           fastqR2 = ig.fastqR2,
