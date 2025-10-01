@@ -77,7 +77,7 @@ workflow ichorCNA {
           fastqR1 = ig.fastqR1,
           fastqR2 = ig.fastqR2,
           readGroups = ig.readGroups,
-          doTrim = false,
+          doTrim = true,
           outputFileNamePrefix = outputFileNamePrefix,
           reference = reference,
           numChunk = 1,
