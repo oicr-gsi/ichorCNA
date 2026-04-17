@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-04-20
+### Changed
+- Removed bwamem/bwamem2 alignment subworkflow
+- [GRD-1105](https://jira.oicr.on.ca/browse/GRD-1105)
+
 ## [1.4.0] - 2025-10-01
 - [GRD-980](https://jira.oicr.on.ca/browse/GRD-980) - Updated to use bwamem2
 
