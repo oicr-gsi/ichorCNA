@@ -25,7 +25,7 @@ java -jar cromwell.jar run ichorCNA.wdl --inputs inputs.json
 #### Required workflow parameters:
 Parameter|Value|Description
 ---|---|---
-`inputBam`|Array[File]|Array of one or multiple bam files (optional).
+`inputBam`|Array[File]|Array of one or multiple bam files.
 `outputFileNamePrefix`|String|Output prefix to prefix output file names with.
 `windowSize`|Int|The size of non-overlapping windows.
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
@@ -36,11 +36,6 @@ Parameter|Value|Description
 `bamQC.bamQCMetrics_refSizesBed`|String|Path to human genome BED reference with chromosome sizes
 `bamQC.bamQCMetrics_refFasta`|String|Path to human genome FASTA reference
 `bamQC.metadata`|Map[String,String]|JSON file containing metadata
-
-
-#### Optional workflow parameters:
-Parameter|Value|Default|Description
----|---|---|---
 
 
 #### Optional task parameters:
@@ -186,7 +181,6 @@ Output | Type | Description | Labels
 `bamQCresult`|File|bamQC report.|vidarr_label: bamQCresult
 
 
-./commands.txt found, printing out the content...
 ## Commands
  This section lists command(s) run by WORKFLOW workflow
  
