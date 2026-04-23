@@ -25,7 +25,7 @@ java -jar cromwell.jar run ichorCNA.wdl --inputs inputs.json
 #### Required workflow parameters:
 Parameter|Value|Description
 ---|---|---
-`inputBam`|Array[File]|Array of one or multiple bam files.
+`inputBam`|Array[File]+|Array of one or multiple bam files
 `outputFileNamePrefix`|String|Output prefix to prefix output file names with.
 `windowSize`|Int|The size of non-overlapping windows.
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
@@ -38,6 +38,11 @@ Parameter|Value|Description
 `bamQC.metadata`|Map[String,String]|JSON file containing metadata
 
 
+#### Optional workflow parameters:
+Parameter|Value|Default|Description
+---|---|---|---
+
+
 #### Optional task parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
@@ -48,7 +53,7 @@ Parameter|Value|Default|Description
 `bamMerge.modules`|String|"samtools/1.14"|Required environment modules
 `bamMerge.timeout`|Int|72|Hours before task timeout
 `indexBam.jobMemory`|Int|12|Memory (in GB) to allocate to the job.
-`indexBam.modules`|String|"samtools/1.9"|Environment module name and version to load (space separated) before command execution.
+`indexBam.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `indexBam.timeout`|Int|48|Maximum amount of time (in hours) the task can run for.
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String|"samtools/1.14 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
@@ -182,18 +187,18 @@ Output | Type | Description | Labels
 
 
 ## Commands
- This section lists command(s) run by WORKFLOW workflow
+ This section lists command(s) run by ichorCNA workflow
  
- * Running WORKFLOW
+ * Running ichorCNA
  
- === Description here ===.
+ ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing.
  
  ```
-       set -euo pipefail
-       samtools merge \
-       -c \
-       ~{resultMergedBam} \
-       ~{sep=" " bams}
+   set -euo pipefail
+   samtools merge \
+   -c \
+   ~{resultMergedBam} \
+   ~{sep=" " bams}
  ```
  
  ```
@@ -210,6 +215,7 @@ Output | Type | Description | Labels
  ```
  
  ```
+   set -euo pipefail
    samtools index ~{inputbam} ~{resultBai}
  ```
  

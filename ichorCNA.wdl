@@ -16,7 +16,7 @@ struct PdfOutput {
 
 workflow ichorCNA {
   input {
-    Array[File] inputBam
+    Array[File]+ inputBam
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -26,7 +26,7 @@ workflow ichorCNA {
   }
 
   parameter_meta {
-    inputBam: "Array of one or multiple bam files (optional)."
+    inputBam: "Array of one or multiple bam files"
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
@@ -312,7 +312,7 @@ task indexBam {
   input {
     File inputbam
     Int jobMemory = 12
-    String modules = "samtools/1.9"
+    String modules = "samtools/1.14"
     Int timeout = 48
   }
 
