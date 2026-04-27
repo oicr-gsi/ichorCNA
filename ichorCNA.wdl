@@ -1,21 +1,12 @@
 version 1.0
 
-import "imports/pull_bwa.wdl" as bwaMem
 import "imports/pull_bamQC.wdl" as bamQC
-
-struct InputGroup {
-  File fastqR1
-  File fastqR2
-  String readGroups
-}
 
 struct ichorCNAResources {
     String gcWig
     String mapWig
     String normalPanel
     String centromere
-    String bwaMemModules
-    String bwaRef
 }
 
 struct PdfOutput {
@@ -25,26 +16,22 @@ struct PdfOutput {
 
 workflow ichorCNA {
   input {
-    Array[InputGroup]? inputGroups
-    Array[File]? inputBam
+    Array[File]+ inputBam
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Boolean provisionBam
-    String inputType
     String reference
   }
 
   parameter_meta {
-    inputGroups: "Array of fastq files and their read groups (optional)."
-    inputBam: "Array of one or multiple bam files (optional)."
+    inputBam: "Array of one or multiple bam files"
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     provisionBam: "Boolean, to provision out bam file and coverage metrics"
-    inputType: "one of either fastq or bam"
     reference: "The genome reference build. for example: hg19, hg38"
   }
 
@@ -55,88 +42,45 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg19-bwa-index/0.7.12",
-      "bwaRef": "$HG19_BWA_INDEX_ROOT/hg19_random.fa"
     },
     "hg38": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "bwaMemModules": "samtools/1.14 bwa/0.7.12 hg38-bwa-index-with-alt/0.7.12",
-      "bwaRef": "$HG38_BWA_INDEX_WITH_ALT_ROOT/hg38_random.fa"
     }
   }
 
+  Array[File] inputBam_ = inputBam
 
-  if(inputType=="fastq" && defined(inputGroups)){
-    Array[InputGroup] inputGroups_ = select_first([inputGroups])
-    scatter (ig in inputGroups_) {
-      call bwaMem.bwaMem {
-        input:
-          fastqR1 = ig.fastqR1,
-          fastqR2 = ig.fastqR2,
-          readGroups = ig.readGroups,
-          doTrim = true,
-          outputFileNamePrefix = outputFileNamePrefix,
-          runBwaMem_bwaRef = resources [ reference ].bwaRef,
-          runBwaMem_modules = resources [ reference ].bwaMemModules
-      }
+  call preMergeBamMetrics {
+    input:
+      bam = inputBam_,
+      outputFileNamePrefix = outputFileNamePrefix
     }
 
-    call preMergeBamMetrics as preMergeBamMetricsFastqInput{
+  if (length(inputBam_) > 1 ) {
+    call bamMerge {
       input:
-        bam = bwaMem.bwaMemBam,
+        bams = inputBam_,
         outputFileNamePrefix = outputFileNamePrefix
     }
-
-    if (length(inputGroups_) > 1 ) {
-      call bamMerge {
-        input:
-          bams = bwaMem.bwaMemBam,
-          outputFileNamePrefix = outputFileNamePrefix
-      }
-      #get reads of each input file
-    }
-
-    if (length(inputGroups_) == 1 ) {
-      File bwaMemBam = bwaMem.bwaMemBam[0]
-    }
-
   }
+  File finalBam = select_first([
+    bamMerge.outputMergedBam,
+    inputBam_[0]
+  ])
 
-  if(inputType=="bam" && defined(inputBam)){
-    Array[File] inputBam_ = select_first([inputBam,[]])
-
-    call preMergeBamMetrics {
-      input:
-        bam = inputBam_,
-        outputFileNamePrefix = outputFileNamePrefix
-    }
-
-    if (length(inputBam_) > 1 ) {
-      call bamMerge as inputBamMerge {
-        input:
-          bams = inputBam_,
-          outputFileNamePrefix = outputFileNamePrefix
-      }
-    }
-
-    if (length(inputBam_) == 1 ) {
-      File singleInputBam = inputBam_[0]
-    }
-  }
-
-  if(provisionBam==true){
+  if(provisionBam){
     call indexBam {
       input:
-        inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam])
+        inputbam = finalBam
     }
   }
 
   call runReadCounter{
     input:
-      bam= select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      bam= finalBam,
       outputFileNamePrefix=outputFileNamePrefix,
       windowSize=windowSize,
       minimumMappingQuality=minimumMappingQuality,
@@ -157,13 +101,13 @@ workflow ichorCNA {
 
   call bamQC.bamQC {
     input:
-        bamFile = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+        bamFile = finalBam,
         outputFileNamePrefix = outputFileNamePrefix
   }
 
   call getMetrics {
     input:
-      inputbam = select_first([bamMerge.outputMergedBam,bwaMemBam,inputBamMerge.outputMergedBam,singleInputBam]),
+      inputbam = finalBam,
       params = runIchorCNA.convergedParameters,
       outputFileNamePrefix = outputFileNamePrefix
   }
@@ -171,7 +115,7 @@ workflow ichorCNA {
   call createJson {
     input:
       bamMetrics = getMetrics.bamMetrics,
-      preBamMetrics = select_first([preMergeBamMetrics.preMergeMetrics,preMergeBamMetricsFastqInput.preMergeMetrics]),
+      preBamMetrics = preMergeBamMetrics.preMergeMetrics,
       allSolsMetrics = getMetrics.all_sols_metrics,
       plotsFile = runIchorCNA.plotsTxt,
       outputFileNamePrefix = outputFileNamePrefix
@@ -194,8 +138,8 @@ workflow ichorCNA {
   }
 
   meta {
-    author: "Beatriz Lujan Toro"
-    email: "beatriz.lujantoro@oicr.on.ca"
+    author: "Beatriz Lujan Toro and Aditi Nallan"
+    email: "beatriz.lujantoro@oicr.on.ca and anallan@oicr.on.ca"
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing."
     dependencies: [
       {
@@ -225,11 +169,11 @@ workflow ichorCNA {
         vidarr_label: "pdf"
     },
     bam: {
-        description: "Bam file used as input to ichorCNA (only produced when provisionBam is True)",
+        description: "Bam file used as input to ichorCNA",
         vidarr_label: "bam"
     },
     bamIndex: {
-        description: "Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)",
+        description: "Bam index for bam file used as input to ichorCNA",
         vidarr_label: "bamIndex"
     },
     bamQCresult: {
@@ -274,7 +218,6 @@ workflow ichorCNA {
   }
 }
 
-#copy from bwaMem
 task bamMerge{
   input {
     Array[File] bams
@@ -368,9 +311,9 @@ task preMergeBamMetrics {
 task indexBam {
   input {
     File inputbam
-    Int jobMemory = 8
+    Int jobMemory = 12
     String modules = "samtools/1.14"
-    Int timeout = 12
+    Int timeout = 48
   }
 
   parameter_meta {
@@ -383,6 +326,7 @@ task indexBam {
   String resultBai = "~{basename(inputbam)}.bai"
 
   command <<<
+  set -euo pipefail
   samtools index ~{inputbam} ~{resultBai}
   >>>
 
@@ -399,7 +343,7 @@ task indexBam {
 
   meta {
     output_meta: {
-      outbam: "alignment file in bam format used for the analysis (merged if input is multiple fastqs or bams).",
+      outbam: "alignment file in bam format used for the analysis (merged if input is multiple bams).",
       bamIndex: "output index file for bam aligned to genome."
     }
   }

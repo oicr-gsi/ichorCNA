@@ -1,16 +1,16 @@
 ## Commands
-This section lists command(s) run by WORKFLOW workflow
+This section lists command(s) run by ichorCNA workflow
 
-* Running WORKFLOW
+* Running ichorCNA
 
-=== Description here ===.
+ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing.
 
 ```
-      set -euo pipefail
-      samtools merge \
-      -c \
-      ~{resultMergedBam} \
-      ~{sep=" " bams}
+  set -euo pipefail
+  samtools merge \
+  -c \
+  ~{resultMergedBam} \
+  ~{sep=" " bams}
 ```
 
 ```
@@ -27,6 +27,7 @@ This section lists command(s) run by WORKFLOW workflow
 ```
 
 ```
+  set -euo pipefail
   samtools index ~{inputbam} ~{resultBai}
 ```
 

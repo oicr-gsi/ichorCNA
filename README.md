@@ -25,12 +25,12 @@ java -jar cromwell.jar run ichorCNA.wdl --inputs inputs.json
 #### Required workflow parameters:
 Parameter|Value|Description
 ---|---|---
+`inputBam`|Array[File]+|Array of one or multiple bam files
 `outputFileNamePrefix`|String|Output prefix to prefix output file names with.
 `windowSize`|Int|The size of non-overlapping windows.
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
 `provisionBam`|Boolean|Boolean, to provision out bam file and coverage metrics
-`inputType`|String|one of either fastq or bam
 `reference`|String|The genome reference build. for example: hg19, hg38
 `bamQC.bamQCMetrics_workflowVersion`|String|Workflow version string
 `bamQC.bamQCMetrics_refSizesBed`|String|Path to human genome BED reference with chromosome sizes
@@ -41,57 +41,20 @@ Parameter|Value|Description
 #### Optional workflow parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
-`inputGroups`|Array[InputGroup]?|None|Array of fastq files and their read groups (optional).
-`inputBam`|Array[File]?|None|Array of one or multiple bam files (optional).
 
 
 #### Optional task parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
-`bwaMem.adapterTrimmingLog_timeout`|Int|48|Hours before task timeout
-`bwaMem.adapterTrimmingLog_jobMemory`|Int|12|Memory allocated indexing job
-`bwaMem.indexBam_timeout`|Int|48|Hours before task timeout
-`bwaMem.indexBam_modules`|String|"samtools/1.9"|Modules for running indexing job
-`bwaMem.indexBam_jobMemory`|Int|12|Memory allocated indexing job
-`bwaMem.bamMerge_timeout`|Int|72|Hours before task timeout
-`bwaMem.bamMerge_modules`|String|"samtools/1.9"|Required environment modules
-`bwaMem.bamMerge_jobMemory`|Int|32|Memory allocated indexing job
-`bwaMem.runBwaMem_timeout`|Int|96|Hours before task timeout
-`bwaMem.runBwaMem_jobMemory`|Int|32|Memory allocated for this job
-`bwaMem.runBwaMem_threads`|Int|8|Requested CPU threads
-`bwaMem.runBwaMem_addParam`|String?|None|Additional BWA parameters
-`bwaMem.adapterTrimming_timeout`|Int|48|Hours before task timeout
-`bwaMem.adapterTrimming_jobMemory`|Int|16|Memory allocated for this job
-`bwaMem.adapterTrimming_addParam`|String?|None|Additional cutadapt parameters
-`bwaMem.adapterTrimming_modules`|String|"cutadapt/1.8.3"|Required environment modules
-`bwaMem.slicerR2_timeout`|Int|48|Hours before task timeout
-`bwaMem.slicerR2_jobMemory`|Int|16|Memory allocated for this job
-`bwaMem.slicerR2_modules`|String|"slicer/0.3.0"|Required environment modules
-`bwaMem.slicerR1_timeout`|Int|48|Hours before task timeout
-`bwaMem.slicerR1_jobMemory`|Int|16|Memory allocated for this job
-`bwaMem.slicerR1_modules`|String|"slicer/0.3.0"|Required environment modules
-`bwaMem.countChunkSize_timeout`|Int|48|Hours before task timeout
-`bwaMem.countChunkSize_jobMemory`|Int|16|Memory allocated for this job
-`bwaMem.numChunk`|Int|1|number of chunks to split fastq file [1, no splitting]
-`bwaMem.trimMinLength`|Int|1|minimum length of reads to keep [1]
-`bwaMem.trimMinQuality`|Int|0|minimum quality of read ends to keep [0]
-`bwaMem.adapter1`|String|"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"|adapter sequence to trim from read 1 [AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC]
-`bwaMem.adapter2`|String|"AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"|adapter sequence to trim from read 2 [AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT]
-`preMergeBamMetricsFastqInput.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
-`preMergeBamMetricsFastqInput.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
-`preMergeBamMetricsFastqInput.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
-`bamMerge.jobMemory`|Int|32|Memory allocated indexing job
-`bamMerge.modules`|String|"samtools/1.14"|Required environment modules
-`bamMerge.timeout`|Int|72|Hours before task timeout
 `preMergeBamMetrics.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
 `preMergeBamMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `preMergeBamMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
-`inputBamMerge.jobMemory`|Int|32|Memory allocated indexing job
-`inputBamMerge.modules`|String|"samtools/1.14"|Required environment modules
-`inputBamMerge.timeout`|Int|72|Hours before task timeout
-`indexBam.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
+`bamMerge.jobMemory`|Int|32|Memory allocated indexing job
+`bamMerge.modules`|String|"samtools/1.14"|Required environment modules
+`bamMerge.timeout`|Int|72|Hours before task timeout
+`indexBam.jobMemory`|Int|12|Memory (in GB) to allocate to the job.
 `indexBam.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
-`indexBam.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`indexBam.timeout`|Int|48|Maximum amount of time (in hours) the task can run for.
 `runReadCounter.mem`|Int|8|Memory (in GB) to allocate to the job.
 `runReadCounter.modules`|String|"samtools/1.14 hmmcopy-utils/0.1.1"|Environment module name and version to load (space separated) before command execution.
 `runReadCounter.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
@@ -210,8 +173,8 @@ Output | Type | Description | Labels
 ---|---|---|---
 `genomeWideAll`|Pair[File,Map[String,String]]|Genome wide plots for each solution|
 `genomeWide`|Pair[File,Map[String,String]]|Genome wide plots for the selected solution|
-`bam`|File?|Bam file used as input to ichorCNA (only produced when provisionBam is True)|vidarr_label: bam
-`bamIndex`|File?|Bam index for bam file used as input to ichorCNA (only produced when provisionBam is True)|vidarr_label: bamIndex
+`bam`|File?|Bam file used as input to ichorCNA|vidarr_label: bam
+`bamIndex`|File?|Bam index for bam file used as input to ichorCNA|vidarr_label: bamIndex
 `jsonMetrics`|File|Report on bam coverage, read counts and ichorCNA metrics.|vidarr_label: jsonMetrics
 `segments`|File|Segments called by the Viterbi algorithm.  Format is compatible with IGV.|vidarr_label: segments
 `segmentsWithSubclonalStatus`|File|Same as segments but also includes subclonal status of segments (0=clonal, 1=subclonal). Format not compatible with IGV.|vidarr_label: segmentsWithSubclonalStatus
@@ -224,25 +187,21 @@ Output | Type | Description | Labels
 
 
 ## Commands
-This section lists command(s) run by ichorCNA workflow
+ This section lists command(s) run by ichorCNA workflow
  
-* Running ichorCNA
+ * Running ichorCNA
  
-IchorCNA allows for quantification of tumor content in cfDNA. The input for this workflow is an array of fastq pairs with their read group information. This ichorCNA workflow first calls bwaMem for an alignment to the specified reference genome; then if multiple fastq pairs are specified the bam files are merged using samtools. The next step prepares the data for ichorCNA which is the final step in the workflow.
+ ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing.
  
-### MERGE BAMS
-
-```
-       set -euo pipefail
-       samtools merge \
-       -c \
-       ~{resultMergedBam} \
-       ~{sep=" " bams}
-```
+ ```
+   set -euo pipefail
+   samtools merge \
+   -c \
+   ~{resultMergedBam} \
+   ~{sep=" " bams}
+ ```
  
-### COLLECT PRE-MERGE BAM METRICS
-
-```
+ ```
    set -euo pipefail
  
    echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
@@ -253,15 +212,14 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
      echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
    done;
  
-```
+ ```
  
-### INDEX BAM
-```
+ ```
+   set -euo pipefail
    samtools index ~{inputbam} ~{resultBai}
-```
-### READCOUNTER
-
-```
+ ```
+ 
+ ```
      set -euo pipefail
  
      samtools index ~{bam}
@@ -279,9 +237,9 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
      --quality ~{minimumMappingQuality} \
      --chromosome "${CHROMOSOMES_WITH_READS}" \
      ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
-```
-### RUN ICHORCNA
-```
+ ```
+ 
+ ```
      set -euo pipefail
  
      runIchorCNA \
@@ -330,9 +288,9 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
      #create txt file with plot full path
      ls $PWD/~{outputFileNamePrefix}/*genomeWide_all_sols.pdf > "~{outputFileNamePrefix}"_plots.txt
      ls $PWD/~{outputFileNamePrefix}/*genomeWide.pdf >> "~{outputFileNamePrefix}"_plots.txt
-```
-###  COLLECT FINAL BAM AND ICHORCNA METRICS
-```
+ ```
+ 
+ ```
    set -euo pipefail
  
    echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
@@ -342,9 +300,9 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
    ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
    echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
    cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
-```
-### CREATE JSON WITH METRICS COLLECTED
-```
+ ```
+ 
+ ```
      set -euo pipefail
  
      python3 <<CODE
@@ -410,8 +368,8 @@ IchorCNA allows for quantification of tumor content in cfDNA. The input for this
          json.dump(output_dict, outPdfJson)
  
      CODE
-```
-## Support
+ ```
+ ## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 
