@@ -382,7 +382,7 @@ task runReadCounter {
 
     # write out a chromosomes with reads for ichorCNA
     # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
-    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sort -V | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
 
     # convert
     readCounter \
