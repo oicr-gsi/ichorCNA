@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Added sort -V to the runReadCounter bash command to fix x-axis issue in genome_wide plots.
 - [GRD-1181](https://jira.oicr.on.ca/browse/GRD-1181)
+- [GRD-1175](https://jira.oicr.on.ca/browse/GRD-1175) added hg38_noAlt entry
 
 ## [1.5.1] - 2026-04-27
 ### Changed
