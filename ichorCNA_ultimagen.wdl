@@ -84,14 +84,9 @@ workflow ichorCNA_ultimagen {
       genomeBuild=reference
   }
 
-  call preMergeBamMetrics {
-    input:
-      bam = [inputCram],
-      refFasta = refFasta,
-      outputFileNamePrefix = outputFileNamePrefix
-  }
-
-  call getMetrics {
+  # single cram = no merge, so one task computes both the lane-level read count
+  # and the sample-level coverage/reads in a single samtools pass
+  call collectMetrics {
     input:
       inputbam = inputCram,
       refFasta = refFasta,
@@ -101,9 +96,9 @@ workflow ichorCNA_ultimagen {
 
   call createJson {
     input:
-      bamMetrics = getMetrics.bamMetrics,
-      preBamMetrics = preMergeBamMetrics.preMergeMetrics,
-      allSolsMetrics = getMetrics.all_sols_metrics,
+      bamMetrics = collectMetrics.bamMetrics,
+      preBamMetrics = collectMetrics.laneMetrics,
+      allSolsMetrics = collectMetrics.all_sols_metrics,
       plotsFile = runIchorCNA.plotsTxt,
       outputFileNamePrefix = outputFileNamePrefix
   }
@@ -219,7 +214,7 @@ task runBamToWig {
   command <<<
     set -euo pipefail
 
-    # bam_to_wig.py — vendored from Ultimagen's ichorCNA fork (streaming, index-free
+    # bam_to_wig.py — ported from Ultimagen's ichorCNA fork (streaming, index-free
     # drop-in for HMMcopy readCounter). Source:
     # https://github.com/Ultimagen/ichorCNA/blob/tammy/streamline-and-downsample-from-s3/scripts/bam_to_wig.py
     cat > bam_to_wig.py <<'PYEOF'
@@ -605,56 +600,7 @@ task runIchorCNA {
   }
 }
 
-task preMergeBamMetrics {
-  input {
-    Array[File] bam
-    String? refFasta
-    String outputFileNamePrefix
-    Int jobMemory = 8
-    String modules = "samtools/1.14"
-    Int timeout = 12
-  }
-
-  parameter_meta {
-    bam: "Input bam (or cram)."
-    refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
-  command <<<
-  set -euo pipefail
-
-  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-  for file in ~{sep=' ' bam}
-  do
-    run=$(samtools view ~{"--reference " + refFasta} -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
-    read_count=$(samtools stats ~{"--reference " + refFasta} "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
-    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-  done;
-
-  >>>
-
-  output {
-  File preMergeMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
-  }
-
-  runtime {
-    memory: "~{jobMemory} GB"
-    modules: "~{modules}"
-    timeout: "~{timeout}"
-  }
-
-  meta {
-    output_meta: {
-      preMergeMetrics: "csv file with bam metrics."
-    }
-  }
-}
-
-task getMetrics {
+task collectMetrics {
   input {
     File inputbam
     String? refFasta
@@ -666,27 +612,41 @@ task getMetrics {
   }
 
   parameter_meta {
-    inputbam: "Input bam (or cram)."
+    inputbam: "Input cram (or bam)."
     refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
+    params: "Converged parameters file from runIchorCNA (tumor fraction / ploidy)."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     jobMemory: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
     timeout: "Maximum amount of time (in hours) the task can run for."
   }
 
+  # A single cram is one "lane" (nothing is merged), so this collapses the
+  # original preMergeBamMetrics + getMetrics into one task: samtools stats is
+  # run once and its read count feeds both the lane-level and sample-level CSVs.
   command <<<
   set -euo pipefail
 
-  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
-  coverage=$(samtools coverage ~{"--reference " + refFasta} ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  run=$(samtools view ~{"--reference " + refFasta} -H ~{inputbam} | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+  run="${run%%$'\n'*}"   # keep only the first run name if the cram has multiple @RG lines
   read_count=$(samtools stats ~{"--reference " + refFasta} ~{inputbam} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  coverage=$(samtools coverage ~{"--reference " + refFasta} ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
   tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+
+  # lane-level CSV (one row for the single cram) — schema matches preMergeBamMetrics
+  echo run,read_count > ~{outputFileNamePrefix}_lane_metrics.csv
+  echo $run,$read_count >> ~{outputFileNamePrefix}_lane_metrics.csv
+
+  # sample-level CSV — schema matches getMetrics
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+
   cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
   >>>
 
   output {
+  File laneMetrics = "~{outputFileNamePrefix}_lane_metrics.csv"
   File bamMetrics = "~{outputFileNamePrefix}_bam_metrics.csv"
   File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
   }
@@ -699,7 +659,8 @@ task getMetrics {
 
   meta {
     output_meta: {
-      bamMetrics: "Metrics collected from the input file used for ichorCNA, to be used as input for final json metrics collection (createJson task).",
+      laneMetrics: "Per-lane read counts (single row for a single cram); fed to createJson as preBamMetrics for lanes_sequenced / reads_per_lane.",
+      bamMetrics: "Sample-level coverage and read count plus ichorCNA tumor fraction / ploidy, for final json metrics collection (createJson task).",
       all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
     }
   }

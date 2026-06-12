@@ -52,7 +52,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "refFasta": "/.mounts/labs/gsi/testdata/efficient_dv/input_data/Homo_sapiens_assembly38.fasta"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa"
     },
     "hg38_noAlt": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
@@ -120,13 +120,6 @@ workflow ichorCNA {
         outputFileNamePrefix = outputFileNamePrefix,
         windowSize = windowSize
     }
-
-    call preMergeBamMetrics as preMergeBamMetricsCram {
-      input:
-        bam = [inputCram_],
-        refFasta = cramRefFasta,
-        outputFileNamePrefix = outputFileNamePrefix
-    }
   }
 
   File wig = select_first([runReadCounter.wig, runMosdepth.wig])
@@ -144,24 +137,38 @@ workflow ichorCNA {
       genomeBuild=reference
   }
 
-  # input file used to collect coverage/read metrics (bam or cram)
-  File analyzedFile = select_first([finalBam, inputCram])
-
-  call getMetrics {
-    input:
-      inputbam = analyzedFile,
-      refFasta = cramRefFasta,
-      params = runIchorCNA.convergedParameters,
-      outputFileNamePrefix = outputFileNamePrefix
+  # BAM path: per-lane counts come from preMergeBamMetricsBam (pre-merge), and
+  # getMetrics computes coverage/reads on the merged bam.
+  if (defined(inputBam)) {
+    call getMetrics {
+      input:
+        inputbam = select_first([finalBam]),
+        params = runIchorCNA.convergedParameters,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
   }
 
-  File preBamMetrics = select_first([preMergeBamMetricsBam.preMergeMetrics, preMergeBamMetricsCram.preMergeMetrics])
+  # CRAM path: a single cram is one lane, so one task does the (expensive) cram
+  # decode once and emits both the lane-level and sample-level metrics.
+  if (defined(inputCram)) {
+    call getCramMetrics {
+      input:
+        cram = select_first([inputCram]),
+        refFasta = select_first([cramRefFasta]),
+        params = runIchorCNA.convergedParameters,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
+  }
+
+  File preBamMetrics = select_first([preMergeBamMetricsBam.preMergeMetrics, getCramMetrics.laneMetrics])
+  File bamMetrics = select_first([getMetrics.bamMetrics, getCramMetrics.bamMetrics])
+  File allSolsMetrics = select_first([getMetrics.all_sols_metrics, getCramMetrics.all_sols_metrics])
 
   call createJson {
     input:
-      bamMetrics = getMetrics.bamMetrics,
+      bamMetrics = bamMetrics,
       preBamMetrics = preBamMetrics,
-      allSolsMetrics = getMetrics.all_sols_metrics,
+      allSolsMetrics = allSolsMetrics,
       plotsFile = runIchorCNA.plotsTxt,
       outputFileNamePrefix = outputFileNamePrefix
   }
@@ -336,6 +343,7 @@ task preMergeBamMetrics {
   for file in ~{sep=' ' bam}
   do
     run=$(samtools view ~{"--reference " + refFasta} -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+    run="${run%%$'\n'*}"   # keep only the first run name if the file has multiple @RG lines
     read_count=$(samtools stats ~{"--reference " + refFasta} "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
     echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
   done;
@@ -764,6 +772,73 @@ task getMetrics {
   meta {
     output_meta: {
       bamMetrics: "Metrics collected from bam file used for ichorCNA, to be used as input for final json metrics collection (createJson task).",
+      all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
+    }
+  }
+}
+
+task getCramMetrics {
+  input {
+    File cram
+    String refFasta
+    File params
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 24
+  }
+
+  parameter_meta {
+    cram: "Input cram."
+    refFasta: "Reference FASTA used by samtools to decode the cram."
+    params: "Converged parameters file from runIchorCNA (tumor fraction / ploidy)."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  # Decoding a cram is expensive, so this runs once and emits both the
+  # lane-level (preBamMetrics) and sample-level (bamMetrics) CSVs, replacing the
+  # separate preMergeBamMetrics + getMetrics passes the bam path uses. A single
+  # cram is one "lane" (nothing is merged).
+  command <<<
+  set -euo pipefail
+
+  run=$(samtools view --reference ~{refFasta} -H ~{cram} | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+  run="${run%%$'\n'*}"   # keep only the first run name if the cram has multiple @RG lines
+  read_count=$(samtools stats --reference ~{refFasta} ~{cram} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  coverage=$(samtools coverage --reference ~{refFasta} ~{cram} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+
+  # lane-level CSV (one row for the single cram) — schema matches preMergeBamMetrics
+  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+
+  # sample-level CSV — schema matches getMetrics
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+
+  cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+  >>>
+
+  output {
+  File laneMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
+  File bamMetrics = "~{outputFileNamePrefix}_bam_metrics.csv"
+  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      laneMetrics: "Per-lane read counts (single row for a single cram); fed to createJson as preBamMetrics for lanes_sequenced / reads_per_lane.",
+      bamMetrics: "Sample-level coverage and read count plus ichorCNA tumor fraction / ploidy, for final json metrics collection (createJson task).",
       all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
     }
   }
