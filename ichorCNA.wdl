@@ -45,7 +45,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "refFasta": "HG19_ROOT/hg19_random.fa"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg19-p13/hg19_random.fa"
     },
     "hg38": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
@@ -59,7 +59,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "refFasta": "$HG38_ROOT/hg38_random.fa"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa"
     }
   }
 
@@ -190,8 +190,8 @@ workflow ichorCNA {
   }
 
   meta {
-    author: "Beatriz Lujan Toro, Aditi Nallan and Gavin Peng"
-    email: "beatriz.lujantoro@oicr.on.ca, anallan@oicr.on.ca, and gpeng@oicr.on.ca"
+    author: "Beatriz Lujan Toro and Aditi Nallan"
+    email: "beatriz.lujantoro@oicr.on.ca and anallan@oicr.on.ca"
     description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing."
     dependencies: [
       {
@@ -478,7 +478,7 @@ task runMosdepth {
     Int windowSize
     Int threads = 8
     Int mem = 16
-    String modules = "mosdepth/0.3.8 samtools/1.14"
+    String modules = "mosdepth/0.3.8 samtools/1.14 hg38-ultima/v0"
     Int timeout = 12
   }
 
@@ -784,7 +784,7 @@ task getCramMetrics {
     File params
     String outputFileNamePrefix
     Int jobMemory = 8
-    String modules = "samtools/1.14"
+    String modules = "samtools/1.14 hg38-ultima/v0"
     Int timeout = 24
   }
 
