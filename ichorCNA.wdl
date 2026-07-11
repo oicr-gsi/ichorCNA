@@ -25,6 +25,7 @@ workflow ichorCNA {
     String chromosomesToAnalyze
     Boolean provisionBam
     String reference
+    String outputDirectory
   }
 
   parameter_meta {
@@ -36,6 +37,7 @@ workflow ichorCNA {
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     provisionBam: "Boolean, to provision out bam file and coverage metrics"
     reference: "The genome reference build. for example: hg19, hg38"
+    outputDirectory: "Absolute path (on a filesystem visible from the compute nodes, e.g. /scratch/.../output) to copy the final workflow outputs into. Used as a substitute for Cromwell's final_workflow_outputs_dir."
   }
 
 
@@ -173,6 +175,33 @@ workflow ichorCNA {
       outputFileNamePrefix = outputFileNamePrefix
   }
 
+  # Copy the final outputs to outputDirectory. This stands in for Cromwell's
+  # final_workflow_outputs_dir (options.json), which is not working on this
+  # deployment. Optional files (bam/bamIndex/bamQC) are dropped by select_all
+  # when they were not produced.
+  Array[File] finalOutputs = select_all([
+    runIchorCNA.genomeWideAll,
+    runIchorCNA.genomeWide,
+    createJson.metricsJson,
+    runIchorCNA.segments,
+    runIchorCNA.segmentsWithSubclonalStatus,
+    runIchorCNA.estimatedCopyNumber,
+    runIchorCNA.convergedParameters,
+    runIchorCNA.correctedDepth,
+    runIchorCNA.rData,
+    runIchorCNA.plots,
+    indexBam.outbam,
+    indexBam.bamIndex,
+    bamQC.result
+  ])
+
+  call copyOutputs {
+    input:
+      files = finalOutputs,
+      outputDirectory = outputDirectory,
+      outputFileNamePrefix = outputFileNamePrefix
+  }
+
   output {
     Pair[File,Map[String,String]] genomeWideAll = createJson.pdfOutput.pdfs[0]
     Pair[File,Map[String,String]] genomeWide = createJson.pdfOutput.pdfs[1]
@@ -187,6 +216,7 @@ workflow ichorCNA {
     File rData = runIchorCNA.rData
     File plots = runIchorCNA.plots
     File? bamQCresult = bamQC.result
+    File copiedOutputsManifest = copyOutputs.copyManifest
   }
 
   meta {
@@ -949,6 +979,54 @@ task createJson {
     output_meta: {
       metricsJson: "json file reporting mean coverage, total reads, lanes sequenced, reads per lane as well as ichorCNA reported ploidy, tumor_fraction for selected and all reported solutions.",
       out: "Annotated output."
+    }
+  }
+}
+
+task copyOutputs {
+  input {
+    Array[File] files
+    String outputDirectory
+    String outputFileNamePrefix
+    Int jobMemory = 4
+    Int timeout = 4
+  }
+
+  parameter_meta {
+    files: "Final workflow output files to copy into outputDirectory."
+    outputDirectory: "Absolute destination directory on a filesystem visible from the compute nodes. Created if it does not exist."
+    outputFileNamePrefix: "Output prefix, used to name the copy manifest."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+    set -euo pipefail
+
+    dest="~{outputDirectory}"
+    mkdir -p "${dest}"
+
+    manifest="~{outputFileNamePrefix}_copied_outputs.txt"
+    : > "${manifest}"
+
+    for f in ~{sep=' ' files}; do
+      cp -f "${f}" "${dest}/"
+      echo "${dest}/$(basename "${f}")" >> "${manifest}"
+    done
+  >>>
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    timeout: "~{timeout}"
+  }
+
+  output {
+    File copyManifest = "~{outputFileNamePrefix}_copied_outputs.txt"
+  }
+
+  meta {
+    output_meta: {
+      copyManifest: "List of the destination paths the final outputs were copied to."
     }
   }
 }
