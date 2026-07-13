@@ -241,7 +241,7 @@ workflow ichorCNA_ultimagen {
     description: "Ultimagen variant of the ichorCNA workflow. Takes cram input and generates the read-count WIG with Ultimagen's bam_to_wig.py (a streaming, index-free drop-in for HMMcopy readCounter) instead of HMMcopy/mosdepth, with optional read downsampling for high-depth (e.g. 100x) cfDNA. Estimates the fraction of tumor in cell-free DNA from sWGS."
     dependencies: [
       {
-        name: "samtools/1.14",
+        name: "samtools/1.16.1",
         url: "http://www.htslib.org/"
       },
       {
@@ -311,7 +311,7 @@ task runBamToWig {
     Float downsampleFraction = 1.0
     Int threads = 4
     Int mem = 8
-    String modules = "samtools/1.14 python/3.9 hg38-ultima/v0"
+    String modules = "samtools/1.16.1 python/3.9 hg38-ultima/v0"
     Int timeout = 12
   }
 
@@ -723,7 +723,7 @@ task bamMerge{
     Array[File] bams
     String outputFileNamePrefix
     Int   jobMemory = 32
-    String modules  = "samtools/1.14"
+    String modules  = "samtools/1.16.1"
     Int timeout     = 72
   }
   parameter_meta {
@@ -767,7 +767,7 @@ task preMergeBamMetrics {
     String? refFasta
     String outputFileNamePrefix
     Int jobMemory = 8
-    String modules = "samtools/1.14"
+    String modules = "samtools/1.16.1"
     Int timeout = 12
   }
 
@@ -815,7 +815,7 @@ task indexBam {
   input {
     File inputbam
     Int jobMemory = 12
-    String modules = "samtools/1.14"
+    String modules = "samtools/1.16.1"
     Int timeout = 48
   }
 
@@ -860,7 +860,7 @@ task runReadCounter {
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Int mem = 8
-    String modules = "samtools/1.14 hmmcopy-utils/0.1.1"
+    String modules = "samtools/1.16.1 hmmcopy-utils/0.1.1"
     Int timeout = 12
   }
 
@@ -922,7 +922,7 @@ task getMetrics {
     File params
     String outputFileNamePrefix
     Int jobMemory = 8
-    String modules = "samtools/1.14"
+    String modules = "samtools/1.16.1"
     Int timeout = 12
   }
 
@@ -973,7 +973,7 @@ task getCramMetrics {
     File params
     String outputFileNamePrefix
     Int jobMemory = 8
-    String modules = "samtools/1.14 hg38-ultima/v0"
+    String modules = "samtools/1.16.1 hg38-ultima/v0"
     Int timeout = 12
   }
 
