@@ -1029,6 +1029,13 @@ task findDownsampleParamsMarkDup {
         CODE
     >>>
 
+    runtime {
+    modules: "~{modules}"
+    memory:  "~{jobMemory} GB"
+    cpu:     "~{threads}"
+    timeout: "~{timeout}"
+    }
+    
     output {
     Boolean status = read_boolean("~{outputStatus}")
     String region = read_string("~{outputRegion}")
