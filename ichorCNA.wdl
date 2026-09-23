@@ -102,7 +102,7 @@ workflow ichorCNA {
       mapWig = resources [ reference ].mapWig,
       normalPanel = resources [ reference ].normalPanel,
       centromere = resources [ reference ].centromere,
-      genomeBuild=reference
+      genomeBuild = if reference == "hg38_noAlt" then "hg38" else reference
   }
 
   call bamQC.bamQC {

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-09-24
+### Changed
+- Fixed genomeBuild being passed to runIchorCNA task 
+
 ## [1.5.2] - 2026-06-02
 ### Changed
 - Added sort -V to the runReadCounter bash command to fix x-axis issue in genome_wide plots.
