@@ -2,6 +2,8 @@
 
 ## Overview
 
+![ichorCNA workflow flowchart](./docs/ichorCNA.flow.svg)
+
 Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing.
 
 The workflow takes either one or more bam files or a single cram file. Bam input is merged if needed, converted to a read-count WIG with HMMcopy readCounter, and QC'd with the bamQC subworkflow. Cram input (e.g. Ultima Genomics) is streamed through bam_to_wig.py, an index-free drop-in for readCounter ported from Ultimagen's ichorCNA fork, with optional read downsampling for high-depth cfDNA; bamQC is skipped. When scheduler is slurm the final outputs are also copied to outputDirectory.
