@@ -241,7 +241,7 @@ workflow ichorCNA {
   meta {
     author: "Beatriz Lujan Toro, Aditi Nallan and Gavin Peng"
     email: "beatriz.lujantoro@oicr.on.ca, anallan@oicr.on.ca and gpeng@oicr.on.ca"
-    description: "Ultimagen variant of the ichorCNA workflow. Takes cram input and generates the read-count WIG with Ultimagen's bam_to_wig.py (a streaming, index-free drop-in for HMMcopy readCounter) instead of HMMcopy/mosdepth, with optional read downsampling for high-depth (e.g. 100x) cfDNA. Estimates the fraction of tumor in cell-free DNA from sWGS."
+    description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing.\n\nThe workflow takes either one or more bam files or a single cram file. Bam input is merged if needed, converted to a read-count WIG with HMMcopy readCounter, and QC'd with the bamQC subworkflow. Cram input (e.g. Ultima Genomics) is streamed through bam_to_wig.py, an index-free drop-in for readCounter ported from Ultimagen's ichorCNA fork, with optional read downsampling for high-depth cfDNA; bamQC is skipped. When scheduler is slurm the final outputs are also copied to outputDirectory."
     dependencies: [
       {
         name: "samtools/1.14",
@@ -265,9 +265,13 @@ workflow ichorCNA {
         description: "Report on coverage, read counts and ichorCNA metrics.",
         vidarr_label: "jsonMetrics"
     },
-    wig: {
-        description: "Read count file in WIG format produced by bam_to_wig.py.",
-        vidarr_label: "wig"
+    bam: {
+        description: "Bam file used for the analysis (merged if input is multiple bams). Bam input with provisionBam only.",
+        vidarr_label: "bam"
+    },
+    bamIndex: {
+        description: "Index of the bam file used for the analysis. Bam input with provisionBam only.",
+        vidarr_label: "bamIndex"
     },
     segments: {
         description: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
@@ -296,6 +300,14 @@ workflow ichorCNA {
     plots: {
         description: "Archived directory of plots.",
         vidarr_label: "plots"
+    },
+    bamQCresult: {
+        description: "bamQC metrics for the bam file used for the analysis. Bam input only.",
+        vidarr_label: "bamQCresult"
+    },
+    copiedOutputsManifest: {
+        description: "List of the paths the final outputs were copied to in outputDirectory. Scheduler slurm only.",
+        vidarr_label: "copiedOutputsManifest"
     },
     genomeWideAll: "Genome wide plots for each solution",
     genomeWide: "Genome wide plots for the selected solution"
