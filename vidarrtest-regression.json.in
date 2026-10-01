@@ -398,7 +398,7 @@
             "ichorCNA.inputBam": null,
             "ichorCNA.inputCram": {
                 "contents": {
-                    "configuration": "/.mounts/labs/gsi/testdata/ultimaMergeQC/test_data/test_lane1.cram",
+                    "configuration": "/.mounts/labs/gsi/testdata/ichorCNA/test_data/pe_plasma.cram",
                     "externalIds": [
                         {
                             "id": "TEST",
