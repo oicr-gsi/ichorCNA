@@ -168,7 +168,7 @@ workflow ichorCNA {
       mapWig = resources [ reference ].mapWig,
       normalPanel = resources [ reference ].normalPanel,
       centromere = resources [ reference ].centromere,
-      genomeBuild = if reference == "hg38_noAlt" then "hg38" else reference
+      genomeBuild = if (reference == "hg38_noAlt" || reference == "hg38_ultima") then "hg38" else reference
   }
 
   # BAM path: per-lane counts come from preMergeBamMetricsBam (pre-merge), and
