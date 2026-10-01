@@ -1,5 +1,4 @@
 version 1.0
-
 import "imports/pull_bamQC.wdl" as bamQC
 
 struct ichorCNAResources {
@@ -7,6 +6,8 @@ struct ichorCNAResources {
     String mapWig
     String normalPanel
     String centromere
+    String refFasta
+    String genomeModule
 }
 
 struct PdfOutput {
@@ -16,23 +17,39 @@ struct PdfOutput {
 
 workflow ichorCNA {
   input {
-    Array[File]+ inputBam
+    Array[File]? inputBam
+    File? inputCram
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
     Boolean provisionBam
     String reference
+    Map[String,String] bamQCmetadata = {}
+    String bamQCMetrics_refFasta = ""
+    String bamQCMetrics_refSizesBed = ""
+    String bamQCMetrics_workflowVersion = ""
+    Float downsampleFraction = 1.0
+    String scheduler = "sge"
+    String? outputDirectory
   }
 
   parameter_meta {
-    inputBam: "Array of one or multiple bam files"
+    inputBam: "Array of one or multiple bam files. Provide either inputBam or inputCram (not both). BAM input uses the readCounter wig-generation path."
+    inputCram: "Single cram file. Provide either inputBam or inputCram (not both). CRAM input uses the bam_to_wig wig-generation path."
+    bamQCmetadata: "Metadata map for bamQC. Required for bam input (bamQC runs); ignored for cram input (bamQC is skipped)."
+    bamQCMetrics_refFasta: "Path to genome FASTA reference for bamQC. Required for bam input; ignored for cram input."
+    bamQCMetrics_refSizesBed: "Path to genome BED reference with chromosome sizes for bamQC. Required for bam input; ignored for cram input."
+    bamQCMetrics_workflowVersion: "Workflow version string for bamQC. Required for bam input; ignored for cram input."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows."
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     provisionBam: "Boolean, to provision out bam file and coverage metrics"
-    reference: "The genome reference build. for example: hg19, hg38"
+    reference: "The genome reference build: hg19, hg38, hg38_noAlt, or hg38_ultima. Use hg38_ultima for Ultima Genomics cram input, which is decoded against the Ultima hg38 reference."
+    downsampleFraction: "Fraction of reads kept by samtools -s before counting (e.g. 0.01 keeps 1%, turning ~100x into ~1x). Default 1.0 = no downsampling."
+    scheduler: "Batch scheduler the workflow runs under, sge or slurm. With slurm the final outputs are also copied to outputDirectory by the copyOutputs task, for deployments where Cromwell's final_workflow_outputs_dir is not available. With sge nothing is copied and outputs are provisioned by Vidarr as usual."
+    outputDirectory: "Absolute path, on a filesystem visible from the compute nodes, to copy the final workflow outputs into. Required when scheduler is slurm; ignored otherwise."
   }
 
 
@@ -41,90 +58,182 @@ workflow ichorCNA {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg19_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
-      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt"
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg19-p13/hg19_random.fa",
+      "genomeModule": ""
     },
     "hg38": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
-      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "genomeModule": ""
+    },
+    "hg38_ultima": {
+      "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
+      "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
+      "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
+      "refFasta": "$HG38_ULTIMA_ROOT/Homo_sapiens_assembly38.fasta",
+      "genomeModule": "hg38-ultima/v0"
     },
     "hg38_noAlt": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
-      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt"
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "genomeModule": ""
     }
   }
 
-  Array[File] inputBam_ = inputBam
+  # BAM input -> readCounter wig-generation path
+  if (defined(inputBam)) {
+    Array[File] inputBam_ = select_first([inputBam])
 
-  call preMergeBamMetrics {
-    input:
-      bam = inputBam_,
-      outputFileNamePrefix = outputFileNamePrefix
-    }
-
-  if (length(inputBam_) > 1 ) {
-    call bamMerge {
+    call preMergeBamMetrics as preMergeBamMetricsBam {
       input:
-        bams = inputBam_,
+        bam = inputBam_,
         outputFileNamePrefix = outputFileNamePrefix
     }
-  }
-  File finalBam = select_first([
-    bamMerge.outputMergedBam,
-    inputBam_[0]
-  ])
 
-  if(provisionBam){
-    call indexBam {
+    if (length(inputBam_) > 1 ) {
+      call bamMerge {
+        input:
+          bams = inputBam_,
+          outputFileNamePrefix = outputFileNamePrefix
+      }
+    }
+    File finalBam = select_first([
+      bamMerge.outputMergedBam,
+      inputBam_[0]
+    ])
+
+    if(provisionBam){
+      call indexBam {
+        input:
+          inputbam = finalBam
+      }
+    }
+
+    call runReadCounter{
       input:
-        inputbam = finalBam
+        bam= finalBam,
+        outputFileNamePrefix=outputFileNamePrefix,
+        windowSize=windowSize,
+        minimumMappingQuality=minimumMappingQuality,
+        chromosomesToAnalyze=chromosomesToAnalyze
+    }
+
+    call bamQC.bamQC {
+      input:
+          bamFile = finalBam,
+          outputFileNamePrefix = outputFileNamePrefix,
+          metadata = bamQCmetadata,
+          bamQCMetrics_refFasta = bamQCMetrics_refFasta,
+          bamQCMetrics_refSizesBed = bamQCMetrics_refSizesBed,
+          bamQCMetrics_workflowVersion = bamQCMetrics_workflowVersion
     }
   }
 
-  call runReadCounter{
-    input:
-      bam= finalBam,
-      outputFileNamePrefix=outputFileNamePrefix,
-      windowSize=windowSize,
-      minimumMappingQuality=minimumMappingQuality,
-      chromosomesToAnalyze=chromosomesToAnalyze
+  # CRAM input -> bam_to_wig.py wig-generation path
+  if (defined(inputCram)) {
+    File inputCram_ = select_first([inputCram])
+    String cramRefFasta = resources [ reference ].refFasta
+    String cramGenomeModule = resources [ reference ].genomeModule
+
+    call runBamToWig {
+      input:
+        cram = inputCram_,
+        refFasta = cramRefFasta,
+        genomeModule = cramGenomeModule,
+        outputFileNamePrefix = outputFileNamePrefix,
+        windowSize = windowSize,
+        minimumMappingQuality = minimumMappingQuality,
+        chromosomesToAnalyze = chromosomesToAnalyze,
+        downsampleFraction = downsampleFraction
+    }
   }
+
+  File wig = select_first([runReadCounter.wig, runBamToWig.wig])
+  Array[String] chrs = select_first([runReadCounter.ichorCNAchrs, runBamToWig.ichorCNAchrs])
 
   call runIchorCNA {
     input:
       outputFileNamePrefix=outputFileNamePrefix,
-      chrs=runReadCounter.ichorCNAchrs,
-      wig=runReadCounter.wig,
+      chrs=chrs,
+      wig=wig,
       gcWig = resources [ reference ].gcWig,
       mapWig = resources [ reference ].mapWig,
       normalPanel = resources [ reference ].normalPanel,
       centromere = resources [ reference ].centromere,
-      genomeBuild = if reference == "hg38_noAlt" then "hg38" else reference
+      genomeBuild = if (reference == "hg38_noAlt" || reference == "hg38_ultima") then "hg38" else reference
   }
 
-  call bamQC.bamQC {
-    input:
-        bamFile = finalBam,
+  # BAM path: per-lane counts come from preMergeBamMetricsBam (pre-merge), and
+  # getMetrics computes coverage/reads on the merged bam.
+  if (defined(inputBam)) {
+    call getMetrics {
+      input:
+        inputbam = select_first([finalBam]),
+        params = runIchorCNA.convergedParameters,
         outputFileNamePrefix = outputFileNamePrefix
+    }
   }
 
-  call getMetrics {
-    input:
-      inputbam = finalBam,
-      params = runIchorCNA.convergedParameters,
-      outputFileNamePrefix = outputFileNamePrefix
+  # CRAM path: a single cram is one lane, so one task does the (expensive) cram
+  # decode once and emits both the lane-level and sample-level metrics.
+  if (defined(inputCram)) {
+    call getCramMetrics {
+      input:
+        cram = select_first([inputCram]),
+        refFasta = select_first([cramRefFasta]),
+        genomeModule = select_first([cramGenomeModule]),
+        params = runIchorCNA.convergedParameters,
+        outputFileNamePrefix = outputFileNamePrefix
+    }
   }
+
+  File preBamMetrics = select_first([preMergeBamMetricsBam.preMergeMetrics, getCramMetrics.laneMetrics])
+  File bamMetrics = select_first([getMetrics.bamMetrics, getCramMetrics.bamMetrics])
+  File allSolsMetrics = select_first([getMetrics.all_sols_metrics, getCramMetrics.all_sols_metrics])
 
   call createJson {
     input:
-      bamMetrics = getMetrics.bamMetrics,
-      preBamMetrics = preMergeBamMetrics.preMergeMetrics,
-      allSolsMetrics = getMetrics.all_sols_metrics,
+      bamMetrics = bamMetrics,
+      preBamMetrics = preBamMetrics,
+      allSolsMetrics = allSolsMetrics,
       plotsFile = runIchorCNA.plotsTxt,
       outputFileNamePrefix = outputFileNamePrefix
+  }
+
+  # On slurm, copy the final outputs to outputDirectory in place of Cromwell's
+  # final_workflow_outputs_dir. Optional files (bam/bamIndex/bamQC) are dropped
+  # by select_all when they were not produced.
+  Array[File] finalOutputs = select_all([
+    runIchorCNA.genomeWideAll,
+    runIchorCNA.genomeWide,
+    createJson.metricsJson,
+    runIchorCNA.segments,
+    runIchorCNA.segmentsWithSubclonalStatus,
+    runIchorCNA.estimatedCopyNumber,
+    runIchorCNA.convergedParameters,
+    runIchorCNA.correctedDepth,
+    runIchorCNA.rData,
+    runIchorCNA.plots,
+    indexBam.outbam,
+    indexBam.bamIndex,
+    bamQC.result
+  ])
+
+  if (scheduler == "slurm") {
+    call copyOutputs {
+      input:
+        files = finalOutputs,
+        outputDirectory = select_first([outputDirectory, ""]),
+        outputFileNamePrefix = outputFileNamePrefix
+    }
   }
 
   output {
@@ -140,21 +249,18 @@ workflow ichorCNA {
     File correctedDepth = runIchorCNA.correctedDepth
     File rData = runIchorCNA.rData
     File plots = runIchorCNA.plots
-    File bamQCresult = bamQC.result
+    File? bamQCresult = bamQC.result
+    File? copiedOutputsManifest = copyOutputs.copyManifest
   }
 
   meta {
-    author: "Beatriz Lujan Toro and Aditi Nallan"
-    email: "beatriz.lujantoro@oicr.on.ca and anallan@oicr.on.ca"
-    description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing."
+    author: "Beatriz Lujan Toro, Aditi Nallan and Gavin Peng"
+    email: "beatriz.lujantoro@oicr.on.ca, anallan@oicr.on.ca and gpeng@oicr.on.ca"
+    description: "Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing.\n\nThe workflow takes either one or more bam files or a single cram file. Bam input is merged if needed, converted to a read-count WIG with HMMcopy readCounter, and QC'd with the bamQC subworkflow. Cram input (e.g. Ultima Genomics) is streamed through bam_to_wig.py, an index-free drop-in for readCounter ported from Ultimagen's ichorCNA fork, with optional read downsampling for high-depth cfDNA; bamQC is skipped. When scheduler is slurm the final outputs are also copied to outputDirectory."
     dependencies: [
       {
         name: "samtools/1.14",
         url: "http://www.htslib.org/"
-      },
-      {
-        name: "hmmcopy-utils/0.1.1",
-        url: "https://shahlab.ca/projects/hmmcopy_utils/"
       },
       {
         name: "ichorcna/0.2",
@@ -170,25 +276,17 @@ workflow ichorCNA {
       }
     ]
     output_meta: {
-    pdf: {
-        description: "Annotations for pdf files produced by ichorCNA, each pdf is annotated with the tumor fraction, ploidy for the selected solution.",
-        vidarr_label: "pdf"
+    jsonMetrics: {
+        description: "Report on coverage, read counts and ichorCNA metrics.",
+        vidarr_label: "jsonMetrics"
     },
     bam: {
-        description: "Bam file used as input to ichorCNA",
+        description: "Bam file used for the analysis (merged if input is multiple bams). Bam input with provisionBam only.",
         vidarr_label: "bam"
     },
     bamIndex: {
-        description: "Bam index for bam file used as input to ichorCNA",
+        description: "Index of the bam file used for the analysis. Bam input with provisionBam only.",
         vidarr_label: "bamIndex"
-    },
-    bamQCresult: {
-        description: "bamQC report.",
-        vidarr_label: "bamQCresult"
-    },
-    jsonMetrics: {
-        description: "Report on bam coverage, read counts and ichorCNA metrics.",
-        vidarr_label: "jsonMetrics"
     },
     segments: {
         description: "Segments called by the Viterbi algorithm.  Format is compatible with IGV.",
@@ -218,161 +316,46 @@ workflow ichorCNA {
         description: "Archived directory of plots.",
         vidarr_label: "plots"
     },
+    bamQCresult: {
+        description: "bamQC metrics for the bam file used for the analysis. Bam input only.",
+        vidarr_label: "bamQCresult"
+    },
+    copiedOutputsManifest: {
+        description: "List of the paths the final outputs were copied to in outputDirectory. Scheduler slurm only.",
+        vidarr_label: "copiedOutputsManifest"
+    },
     genomeWideAll: "Genome wide plots for each solution",
     genomeWide: "Genome wide plots for the selected solution"
   }
   }
 }
 
-task bamMerge{
+task runBamToWig {
   input {
-    Array[File] bams
-    String outputFileNamePrefix
-    Int   jobMemory = 32
-    String modules  = "samtools/1.14"
-    Int timeout     = 72
-  }
-  parameter_meta {
-    bams:  "Input bam files"
-    outputFileNamePrefix: "Prefix for output file"
-    jobMemory: "Memory allocated indexing job"
-    modules:   "Required environment modules"
-    timeout:   "Hours before task timeout"
-  }
-
-    String resultMergedBam = "~{outputFileNamePrefix}.bam"
-
-    command <<<
-      set -euo pipefail
-      samtools merge \
-      -c \
-      ~{resultMergedBam} \
-      ~{sep=" " bams}
-    >>>
-
-    runtime {
-      memory: "~{jobMemory} GB"
-      modules: "~{modules}"
-      timeout: "~{timeout}"
-    }
-
-    output {
-      File outputMergedBam = "~{resultMergedBam}"
-    }
-
-    meta {
-        output_meta: {
-          outputMergedBam: "output merged bam aligned to genome"
-        }
-    }
-}
-
-task preMergeBamMetrics {
-  input {
-    Array[File] bam
-    String outputFileNamePrefix
-    Int jobMemory = 8
-    String modules = "samtools/1.14"
-    Int timeout = 12
-  }
-
-  parameter_meta {
-    bam: "Input bam pre merge."
-    outputFileNamePrefix: "Output prefix to prefix output file names with."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
-  command <<<
-  set -euo pipefail
-
-  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-  for file in ~{sep=' ' bam}
-  do
-    run=$(samtools view -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
-    read_count=$(samtools stats "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
-    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
-  done;
-
-  >>>
-
-  output {
-  File preMergeMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
-  }
-
-  runtime {
-    memory: "~{jobMemory} GB"
-    modules: "~{modules}"
-    timeout: "~{timeout}"
-  }
-
-  meta {
-    output_meta: {
-      preMergeMetrics: "csv file with bam metrics."
-    }
-  }
-}
-
-task indexBam {
-  input {
-    File inputbam
-    Int jobMemory = 12
-    String modules = "samtools/1.14"
-    Int timeout = 48
-  }
-
-  parameter_meta {
-    inputbam: "Input bam."
-    jobMemory: "Memory (in GB) to allocate to the job."
-    modules: "Environment module name and version to load (space separated) before command execution."
-    timeout: "Maximum amount of time (in hours) the task can run for."
-  }
-
-  String resultBai = "~{basename(inputbam)}.bai"
-
-  command <<<
-  set -euo pipefail
-  samtools index ~{inputbam} ~{resultBai}
-  >>>
-
-  runtime {
-    memory: "~{jobMemory} GB"
-    modules: "~{modules}"
-    timeout: "~{timeout}"
-  }
-
-  output {
-    File outbam = "~{inputbam}"
-    File bamIndex = "~{resultBai}"
-  }
-
-  meta {
-    output_meta: {
-      outbam: "alignment file in bam format used for the analysis (merged if input is multiple bams).",
-      bamIndex: "output index file for bam aligned to genome."
-    }
-  }
-}
-
-task runReadCounter {
-  input{
-    File bam
+    File cram
+    String refFasta
+    String genomeModule
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
     String chromosomesToAnalyze
+    Float downsampleFraction = 1.0
+    Int threads = 4
     Int mem = 8
-    String modules = "samtools/1.14 hmmcopy-utils/0.1.1"
+    String modules = "samtools/1.14 python/3.9"
     Int timeout = 12
   }
 
   parameter_meta {
-    bam: "Input bam."
+    cram: "Input cram."
+    refFasta: "Reference FASTA used to decode the cram (samtools -T); its .fai index (refFasta + .fai) supplies chromosome lengths to bam_to_wig.py."
+    genomeModule: "Module that provides refFasta, or empty if the path needs none. Loaded after modules."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
-    windowSize: "The size of non-overlapping windows."
-    minimumMappingQuality: "Mapping quality value below which reads are ignored."
-    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    windowSize: "The size of non-overlapping windows (bin size in bp, bam_to_wig.py -w)."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored (bam_to_wig.py -q)."
+    chromosomesToAnalyze: "Chromosomes to emit (bam_to_wig.py -c)."
+    downsampleFraction: "Fraction of reads kept by samtools -s before counting. Default 1.0 = no downsampling."
+    threads: "Threads for samtools decoding."
     mem: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
     timeout: "Maximum amount of time (in hours) the task can run for."
@@ -381,26 +364,202 @@ task runReadCounter {
   command <<<
     set -euo pipefail
 
-    samtools index ~{bam}
+    # bam_to_wig.py — ported from Ultimagen's ichorCNA fork (streaming, index-free
+    # drop-in for HMMcopy readCounter). Source:
+    # https://github.com/Ultimagen/ichorCNA/blob/tammy/streamline-and-downsample-from-s3/scripts/bam_to_wig.py
+    cat > bam_to_wig.py <<'PYEOF'
+#!/usr/bin/env python3
+"""
+Stream SAM/BAM records from stdin and output a fixed-step WIG read-count file.
+Drop-in replacement for HMMcopy readCounter when no BAM index is available
+(e.g. when streaming from S3 via a named pipe or process substitution).
 
-    # calculate chromosomes to analyze (with reads) from input data
-    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep -Ew $(tr ',' '|' <<<  '~{chromosomesToAnalyze}') | paste -s -d, -)
+Usage:
+    samtools view -T ref.fa file.cram chr1 chr2 ... \
+        | bam_to_wig.py -w 50000 -q 20 -c chr1,chr2,...
 
-    # write out a chromosomes with reads for ichorCNA
-    # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
-    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sort -V | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+Output:
+    WIG file to stdout (variableStep per chromosome, one value per bin).
+"""
+import sys
+import argparse
+from collections import defaultdict, OrderedDict
 
-    # convert
-    readCounter \
-    --window ~{windowSize} \
-    --quality ~{minimumMappingQuality} \
-    --chromosome "${CHROMOSOMES_WITH_READS}" \
-    ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+
+def parse_args():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("-w", "--window", type=int, default=1_000_000,
+                   help="Bin size in bp (default: 1000000)")
+    p.add_argument("-q", "--quality", type=int, default=0,
+                   help="Minimum mapping quality (default: 0)")
+    p.add_argument("-c", "--chromosomes", default=None,
+                   help="Comma-separated list of chromosomes to output. "
+                        "Others are still counted but not emitted. "
+                        "If omitted, all chromosomes seen in the SAM header are output.")
+    p.add_argument("--fai", default=None,
+                   help="Path to reference .fai. If given, chrom lengths come "
+                        "from there (preferred — works when samtools is run "
+                        "without -h and emits no @SQ lines).")
+    return p.parse_args()
+
+
+def load_fai(path):
+    lengths = OrderedDict()
+    with open(path) as f:
+        for line in f:
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) >= 2:
+                lengths[parts[0]] = int(parts[1])
+    return lengths
+
+
+def main():
+    args = parse_args()
+    keep_chrs = set(args.chromosomes.split(",")) if args.chromosomes else None
+
+    # chrom → length. Preload from .fai if given (works even when samtools is
+    # invoked without -h, which is the case in the per-chrom streaming path).
+    chr_lengths = load_fai(args.fai) if args.fai else OrderedDict()
+    counts = defaultdict(int)     # (chrom, bin_start) → read count
+
+    # SAM flag bits to skip: unmapped, secondary, QC fail, duplicate, supplementary
+    SKIP_FLAGS = 0x4 | 0x100 | 0x200 | 0x400 | 0x800
+
+    total_read = 0
+    kept = 0
+    current_chr = None
+    import time
+    t0 = time.time()
+
+    for line in sys.stdin:
+        if line.startswith("@"):
+            # Parse @SQ header lines for chromosome lengths
+            if line.startswith("@SQ"):
+                fields = dict(f.split(":", 1) for f in line.split("\t")[1:] if ":" in f)
+                chrom = fields.get("SN", "")
+                length = int(fields.get("LN", 0))
+                if chrom and length:
+                    chr_lengths[chrom] = length
+            continue
+
+        parts = line.split("\t", 12)
+        if len(parts) < 5:
+            continue
+
+        flag = int(parts[1])
+        if flag & SKIP_FLAGS:
+            continue
+
+        mapq = int(parts[4])
+        if mapq < args.quality:
+            continue
+
+        chrom = parts[2]
+        if chrom == "*":
+            continue
+        if keep_chrs and chrom not in keep_chrs:
+            continue
+
+        # New chromosome → print a completion line then announce the new one
+        if chrom != current_chr:
+            if current_chr is not None:
+                elapsed = time.time() - t0
+                sys.stderr.write(
+                    f"\r  [{elapsed:6.0f}s] finished {current_chr:<6} | "
+                    f"{total_read/1e6:6.1f}M reads total | "
+                    f"{kept/1e6:5.1f}M kept | "
+                    f"{total_read/elapsed/1e6:.2f}M reads/s\n"
+                )
+                sys.stderr.flush()
+            current_chr = chrom
+            sys.stderr.write(f"  [      ] starting {current_chr} ...\r")
+            sys.stderr.flush()
+
+        total_read += 1
+
+        # Rolling update every 1M reads within a chromosome
+        if total_read % 1_000_000 == 0:
+            elapsed = time.time() - t0
+            sys.stderr.write(
+                f"\r  [{elapsed:6.0f}s] {current_chr:<6} "
+                f"{total_read/1e6:6.1f}M reads | "
+                f"{kept/1e6:5.1f}M kept | "
+                f"{total_read/elapsed/1e6:.2f}M reads/s   "
+            )
+            sys.stderr.flush()
+
+        pos = int(parts[3])  # 1-based leftmost position
+        bin_start = ((pos - 1) // args.window) * args.window + 1
+        counts[(chrom, bin_start)] += 1
+        kept += 1
+
+    # ── Emit WIG ──────────────────────────────────────────────────────────────
+    elapsed = time.time() - t0
+    sys.stderr.write(
+        f"\n  Done: {total_read/1e6:.1f}M reads in {elapsed:.0f}s "
+        f"({total_read/elapsed/1e6:.2f}M reads/s) | {kept} bins populated\n"
+    )
+    # Emit fixedStep WIG to match the format of the bundled GC/map reference
+    # WIGs that ichorCNA expects (HMMcopy::wigsToRangedData). One value per
+    # bin from start=1 to chrom_length, zero-filled where no reads landed.
+    emit_chrs = [c for c in chr_lengths if keep_chrs is None or c in keep_chrs]
+    seen = set(emit_chrs)
+    # Append any chrom seen in reads but missing from chr_lengths (rare — only
+    # when no .fai was given). Use a set to avoid duplicates.
+    seen_in_counts = set()
+    for chrom, _ in counts:
+        if chrom not in seen and chrom not in seen_in_counts:
+            seen_in_counts.add(chrom)
+            emit_chrs.append(chrom)
+
+    for chrom in emit_chrs:
+        length = chr_lengths.get(chrom, 0)
+        if length <= 0:
+            # No length info → fall back to max observed bin
+            chrom_bins = [b for (c, b) in counts if c == chrom]
+            if not chrom_bins:
+                continue
+            length = max(chrom_bins) + args.window
+        sys.stdout.write(
+            f"fixedStep chrom={chrom} start=1 step={args.window} span={args.window}\n"
+        )
+        n_bins = (length + args.window - 1) // args.window
+        for i in range(n_bins):
+            bin_start = i * args.window + 1
+            sys.stdout.write(f"{counts.get((chrom, bin_start), 0)}\n")
+
+
+if __name__ == "__main__":
+    main()
+PYEOF
+
+    # downsample reads if requested (samtools -s FRAC); skip when fraction >= 1.0
+    SUBSAMPLE_FLAG=""
+    if awk "BEGIN{exit !(~{downsampleFraction} < 1.0)}"; then
+      SUBSAMPLE_FLAG="-s ~{downsampleFraction}"
+    fi
+
+    # stream the cram through bam_to_wig.py; strip the "chr" prefix from chrom
+    # names so the WIG matches the gcWig/mapWig reference WIGs ichorCNA expects
+    samtools view -@ ~{threads} ${SUBSAMPLE_FLAG} -T ~{refFasta} ~{cram} \
+    | python3 bam_to_wig.py -w ~{windowSize} -q ~{minimumMappingQuality} -c "~{chromosomesToAnalyze}" --fai ~{refFasta}.fai \
+    | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+
+    # write out chromosomes with reads for ichorCNA. The WIG is zero-filled for
+    # every chromosome in the .fai, so keep only those with a non-zero bin, as
+    # runReadCounter does with idxstats (chr prefix already stripped above,
+    # exclude Y, sort, wrap in single quotes)
+    awk '/^fixedStep/ { sub(/.*chrom=/, ""); sub(/ .*/, ""); chrom = $0; next }
+         $1 > 0 { seen[chrom] = 1 }
+         END { for (c in seen) print c }' ~{outputFileNamePrefix}.wig \
+    | grep -vw Y | sort -V | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
   >>>
 
   runtime {
     memory: "~{mem} GB"
-    modules: "~{modules}"
+    cpu: "~{threads}"
+    modules: "~{modules} ~{genomeModule}"
     timeout: "~{timeout}"
   }
 
@@ -594,9 +753,207 @@ task runIchorCNA {
   }
 }
 
+task bamMerge{
+  input {
+    Array[File] bams
+    String outputFileNamePrefix
+    Int   jobMemory = 32
+    String modules  = "samtools/1.14"
+    Int timeout     = 72
+  }
+  parameter_meta {
+    bams:  "Input bam files"
+    outputFileNamePrefix: "Prefix for output file"
+    jobMemory: "Memory allocated indexing job"
+    modules:   "Required environment modules"
+    timeout:   "Hours before task timeout"
+  }
+
+    String resultMergedBam = "~{outputFileNamePrefix}.bam"
+
+    command <<<
+      set -euo pipefail
+      samtools merge \
+      -c \
+      ~{resultMergedBam} \
+      ~{sep=" " bams}
+    >>>
+
+    runtime {
+      memory: "~{jobMemory} GB"
+      modules: "~{modules}"
+      timeout: "~{timeout}"
+    }
+
+    output {
+      File outputMergedBam = "~{resultMergedBam}"
+    }
+
+    meta {
+        output_meta: {
+          outputMergedBam: "output merged bam aligned to genome"
+        }
+    }
+}
+
+task preMergeBamMetrics {
+  input {
+    Array[File] bam
+    String? refFasta
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  parameter_meta {
+    bam: "Input bam (or cram) pre merge."
+    refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+  set -euo pipefail
+
+  echo run,read_count > ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  for file in ~{sep=' ' bam}
+  do
+    run=$(samtools view ~{"--reference " + refFasta} -H "${file}" | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+    run="${run%%$'\n'*}"   # keep only the first run name if the file has multiple @RG lines
+    read_count=$(samtools stats ~{"--reference " + refFasta} "${file}" | grep ^SN | grep "raw total sequences" | cut -f 3)
+    echo $run,$read_count >> ~{outputFileNamePrefix}_pre_merge_bam_metrics.csv
+  done;
+
+  >>>
+
+  output {
+  File preMergeMetrics = "~{outputFileNamePrefix}_pre_merge_bam_metrics.csv"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      preMergeMetrics: "csv file with bam metrics."
+    }
+  }
+}
+
+task indexBam {
+  input {
+    File inputbam
+    Int jobMemory = 12
+    String modules = "samtools/1.14"
+    Int timeout = 48
+  }
+
+  parameter_meta {
+    inputbam: "Input bam."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  String resultBai = "~{basename(inputbam)}.bai"
+
+  command <<<
+  set -euo pipefail
+  samtools index ~{inputbam} ~{resultBai}
+  >>>
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  output {
+    File outbam = "~{inputbam}"
+    File bamIndex = "~{resultBai}"
+  }
+
+  meta {
+    output_meta: {
+      outbam: "alignment file in bam format used for the analysis (merged if input is multiple bams).",
+      bamIndex: "output index file for bam aligned to genome."
+    }
+  }
+}
+
+task runReadCounter {
+  input{
+    File bam
+    String outputFileNamePrefix
+    Int windowSize
+    Int minimumMappingQuality
+    String chromosomesToAnalyze
+    Int mem = 8
+    String modules = "samtools/1.14 hmmcopy-utils/0.1.1"
+    Int timeout = 12
+  }
+
+  parameter_meta {
+    bam: "Input bam."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    windowSize: "The size of non-overlapping windows."
+    minimumMappingQuality: "Mapping quality value below which reads are ignored."
+    chromosomesToAnalyze: "Chromosomes in the bam reference file."
+    mem: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+    set -euo pipefail
+
+    samtools index ~{bam}
+
+    # calculate chromosomes to analyze (with reads) from input data
+    CHROMOSOMES_WITH_READS=$(samtools idxstats ~{bam} | awk '$3 > 0' - | cut -f1 | grep -Ew $(tr ',' '|' <<<  '~{chromosomesToAnalyze}') | paste -s -d, -)
+
+    # write out a chromosomes with reads for ichorCNA
+    # split onto new lines (for wdl read_lines), exclude chrY, remove chr prefix, wrap in single quotes for ichorCNA
+    echo "${CHROMOSOMES_WITH_READS}" | tr ',' '\n' | grep -v chrY | sed "s/chr//g" | sort -V | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+
+    # convert
+    readCounter \
+    --window ~{windowSize} \
+    --quality ~{minimumMappingQuality} \
+    --chromosome "${CHROMOSOMES_WITH_READS}" \
+    ~{bam} | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
+  >>>
+
+  runtime {
+    memory: "~{mem} GB"
+    modules: "~{modules}"
+    timeout: "~{timeout}"
+  }
+
+  output {
+    File wig = "~{outputFileNamePrefix}.wig"
+    Array[String] ichorCNAchrs = read_lines("ichorCNAchrs.txt")
+  }
+
+  meta {
+    output_meta: {
+      wig: "Read count file in WIG format",
+      ichorCNAchrs: "Chromosomes with reads for ichorCNA (\"chr\" stripped from the name)"
+    }
+  }
+}
+
+
 task getMetrics {
   input {
     File inputbam
+    String? refFasta
     File params
     String outputFileNamePrefix
     Int jobMemory = 8
@@ -605,7 +962,8 @@ task getMetrics {
   }
 
   parameter_meta {
-    inputbam: "Input bam."
+    inputbam: "Input bam (or cram)."
+    refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     jobMemory: "Memory (in GB) to allocate to the job."
     modules: "Environment module name and version to load (space separated) before command execution."
@@ -616,8 +974,8 @@ task getMetrics {
   set -euo pipefail
 
   echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
-  coverage=$(samtools coverage ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
-  read_count=$(samtools stats ~{inputbam} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  coverage=$(samtools coverage ~{"--reference " + refFasta} ~{inputbam} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  read_count=$(samtools stats ~{"--reference " + refFasta} ~{inputbam} | grep ^SN | grep "raw total sequences" | cut -f 3)
   tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
   ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
   echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
@@ -638,6 +996,74 @@ task getMetrics {
   meta {
     output_meta: {
       bamMetrics: "Metrics collected from bam file used for ichorCNA, to be used as input for final json metrics collection (createJson task).",
+      all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
+    }
+  }
+}
+
+task getCramMetrics {
+  input {
+    File cram
+    String? refFasta
+    String genomeModule
+    File params
+    String outputFileNamePrefix
+    Int jobMemory = 8
+    String modules = "samtools/1.14"
+    Int timeout = 12
+  }
+
+  parameter_meta {
+    cram: "Input cram file."
+    refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
+    genomeModule: "Module that provides refFasta, or empty if the path needs none. Loaded after modules."
+    params: "Converged parameters file from runIchorCNA (tumor fraction / ploidy)."
+    outputFileNamePrefix: "Output prefix to prefix output file names with."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    modules: "Environment module name and version to load (space separated) before command execution."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  # A single cram is one "lane" (nothing is merged), so this collapses the
+  # original preMergeBamMetrics + getMetrics into one task: samtools stats is
+  # run once and its read count feeds both the lane-level and sample-level CSVs.
+  command <<<
+  set -euo pipefail
+
+  run=$(samtools view ~{"--reference " + refFasta} -H ~{cram} | grep '^@RG' | cut -f 2 | cut -f 2 -d ":" | cut -f 1 -d "-")
+  run="${run%%$'\n'*}"   # keep only the first run name if the cram has multiple @RG lines
+  read_count=$(samtools stats ~{"--reference " + refFasta} ~{cram} | grep ^SN | grep "raw total sequences" | cut -f 3)
+  coverage=$(samtools coverage ~{"--reference " + refFasta} ~{cram} | grep -P "^chr\d+\t|^chrX\t|^chrY\t" | awk '{ space += ($3-$2)+1; bases += $7*($3-$2);} END { print bases/space }')
+  tumor_fraction=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 2)
+  ploidy=$(cat ~{params} | head -n 2 | tail -n 1 | cut -f 3)
+
+  # lane-level CSV (one row for the single cram) — schema matches preMergeBamMetrics
+  echo run,read_count > ~{outputFileNamePrefix}_lane_metrics.csv
+  echo $run,$read_count >> ~{outputFileNamePrefix}_lane_metrics.csv
+
+  # sample-level CSV — schema matches getMetrics
+  echo coverage,read_count,tumor_fraction,ploidy > ~{outputFileNamePrefix}_bam_metrics.csv
+  echo $coverage,$read_count,$tumor_fraction,$ploidy >> ~{outputFileNamePrefix}_bam_metrics.csv
+
+  cat ~{params} | tail -n 17 > ~{outputFileNamePrefix}_all_sols_metrics.csv
+  >>>
+
+  output {
+  File laneMetrics = "~{outputFileNamePrefix}_lane_metrics.csv"
+  File bamMetrics = "~{outputFileNamePrefix}_bam_metrics.csv"
+  File all_sols_metrics = "~{outputFileNamePrefix}_all_sols_metrics.csv"
+  }
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    modules: "~{modules} ~{genomeModule}"
+    timeout: "~{timeout}"
+  }
+
+  meta {
+    output_meta: {
+      laneMetrics: "Per-lane read counts (single row for a single cram); fed to createJson as preBamMetrics for lanes_sequenced / reads_per_lane.",
+      bamMetrics: "Sample-level coverage and read count plus ichorCNA tumor fraction / ploidy, for final json metrics collection (createJson task).",
       all_sols_metrics: "Collected metrics from each solution stored in the params file, to be used as input for final json metrics collection (createJson task)."
     }
   }
@@ -748,6 +1174,58 @@ task createJson {
     output_meta: {
       metricsJson: "json file reporting mean coverage, total reads, lanes sequenced, reads per lane as well as ichorCNA reported ploidy, tumor_fraction for selected and all reported solutions.",
       out: "Annotated output."
+    }
+  }
+}
+
+task copyOutputs {
+  input {
+    Array[File] files
+    String outputDirectory
+    String outputFileNamePrefix
+    Int jobMemory = 4
+    Int timeout = 4
+  }
+
+  parameter_meta {
+    files: "Final workflow output files to copy into outputDirectory."
+    outputDirectory: "Absolute destination directory on a filesystem visible from the compute nodes. Created if it does not exist."
+    outputFileNamePrefix: "Output prefix, used to name the copy manifest."
+    jobMemory: "Memory (in GB) to allocate to the job."
+    timeout: "Maximum amount of time (in hours) the task can run for."
+  }
+
+  command <<<
+    set -euo pipefail
+
+    dest="~{outputDirectory}"
+    if [ -z "${dest}" ]; then
+      echo "outputDirectory is required when scheduler is slurm" >&2
+      exit 1
+    fi
+    mkdir -p "${dest}"
+
+    manifest="~{outputFileNamePrefix}_copied_outputs.txt"
+    : > "${manifest}"
+
+    for f in ~{sep=' ' files}; do
+      cp -f "${f}" "${dest}/"
+      echo "${dest}/$(basename "${f}")" >> "${manifest}"
+    done
+  >>>
+
+  runtime {
+    memory: "~{jobMemory} GB"
+    timeout: "~{timeout}"
+  }
+
+  output {
+    File copyManifest = "~{outputFileNamePrefix}_copied_outputs.txt"
+  }
+
+  meta {
+    output_meta: {
+      copyManifest: "List of the destination paths the final outputs were copied to."
     }
   }
 }
