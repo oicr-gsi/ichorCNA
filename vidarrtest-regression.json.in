@@ -416,7 +416,7 @@
             "ichorCNA.preMergeBamMetricsBam.refFasta": null,
             "ichorCNA.preMergeBamMetricsBam.timeout": null,
             "ichorCNA.provisionBam": false,
-            "ichorCNA.reference": "hg38",
+            "ichorCNA.reference": "hg38_ultima",
             "ichorCNA.runBamToWig.mem": null,
             "ichorCNA.runBamToWig.modules": null,
             "ichorCNA.runBamToWig.threads": null,

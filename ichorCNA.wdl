@@ -7,6 +7,7 @@ struct ichorCNAResources {
     String normalPanel
     String centromere
     String refFasta
+    String genomeModule
 }
 
 struct PdfOutput {
@@ -45,7 +46,7 @@ workflow ichorCNA {
     minimumMappingQuality: "Mapping quality value below which reads are ignored."
     chromosomesToAnalyze: "Chromosomes in the bam reference file."
     provisionBam: "Boolean, to provision out bam file and coverage metrics"
-    reference: "The genome reference build. for example: hg19, hg38"
+    reference: "The genome reference build: hg19, hg38, hg38_noAlt, or hg38_ultima. Use hg38_ultima for Ultima Genomics cram input, which is decoded against the Ultima hg38 reference."
     downsampleFraction: "Fraction of reads kept by samtools -s before counting (e.g. 0.01 keeps 1%, turning ~100x into ~1x). Default 1.0 = no downsampling."
     scheduler: "Batch scheduler the workflow runs under, sge or slurm. With slurm the final outputs are also copied to outputDirectory by the copyOutputs task, for deployments where Cromwell's final_workflow_outputs_dir is not available. With sge nothing is copied and outputs are provisioned by Vidarr as usual."
     outputDirectory: "Absolute path, on a filesystem visible from the compute nodes, to copy the final workflow outputs into. Required when scheduler is slurm; ignored otherwise."
@@ -58,21 +59,32 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg19_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_1Mb_median_normAutosome_mapScoreFiltered_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh37.p13_centromere_UCSC-gapTable.txt",
-      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg19-p13/hg19_random.fa"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg19-p13/hg19_random.fa",
+      "genomeModule": ""
     },
     "hg38": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "refFasta": "$HG38_ULTIMA_ROOT/Homo_sapiens_assembly38.fasta"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "genomeModule": ""
+    },
+    "hg38_ultima": {
+      "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
+      "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
+      "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
+      "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
+      "refFasta": "$HG38_ULTIMA_ROOT/Homo_sapiens_assembly38.fasta",
+      "genomeModule": "hg38-ultima/v0"
     },
     "hg38_noAlt": {
       "gcWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/gc_hg38_1000kb.wig",
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa"
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "genomeModule": ""
     }
   }
 
@@ -129,11 +141,13 @@ workflow ichorCNA {
   if (defined(inputCram)) {
     File inputCram_ = select_first([inputCram])
     String cramRefFasta = resources [ reference ].refFasta
+    String cramGenomeModule = resources [ reference ].genomeModule
 
     call runBamToWig {
       input:
         cram = inputCram_,
         refFasta = cramRefFasta,
+        genomeModule = cramGenomeModule,
         outputFileNamePrefix = outputFileNamePrefix,
         windowSize = windowSize,
         minimumMappingQuality = minimumMappingQuality,
@@ -175,6 +189,7 @@ workflow ichorCNA {
       input:
         cram = select_first([inputCram]),
         refFasta = select_first([cramRefFasta]),
+        genomeModule = select_first([cramGenomeModule]),
         params = runIchorCNA.convergedParameters,
         outputFileNamePrefix = outputFileNamePrefix
     }
@@ -319,6 +334,7 @@ task runBamToWig {
   input {
     File cram
     String refFasta
+    String genomeModule
     String outputFileNamePrefix
     Int windowSize
     Int minimumMappingQuality
@@ -326,13 +342,14 @@ task runBamToWig {
     Float downsampleFraction = 1.0
     Int threads = 4
     Int mem = 8
-    String modules = "samtools/1.14 python/3.9 hg38-ultima/v0"
+    String modules = "samtools/1.14 python/3.9"
     Int timeout = 12
   }
 
   parameter_meta {
     cram: "Input cram."
     refFasta: "Reference FASTA used to decode the cram (samtools -T); its .fai index (refFasta + .fai) supplies chromosome lengths to bam_to_wig.py."
+    genomeModule: "Module that provides refFasta, or empty if the path needs none. Loaded after modules."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     windowSize: "The size of non-overlapping windows (bin size in bp, bam_to_wig.py -w)."
     minimumMappingQuality: "Mapping quality value below which reads are ignored (bam_to_wig.py -q)."
@@ -539,7 +556,7 @@ PYEOF
   runtime {
     memory: "~{mem} GB"
     cpu: "~{threads}"
-    modules: "~{modules}"
+    modules: "~{modules} ~{genomeModule}"
     timeout: "~{timeout}"
   }
 
@@ -985,16 +1002,18 @@ task getCramMetrics {
   input {
     File cram
     String? refFasta
+    String genomeModule
     File params
     String outputFileNamePrefix
     Int jobMemory = 8
-    String modules = "samtools/1.14 hg38-ultima/v0"
+    String modules = "samtools/1.14"
     Int timeout = 12
   }
 
   parameter_meta {
     cram: "Input cram file."
     refFasta: "Reference FASTA, required when the input is cram so samtools can decode it. Default: [NULL]."
+    genomeModule: "Module that provides refFasta, or empty if the path needs none. Loaded after modules."
     params: "Converged parameters file from runIchorCNA (tumor fraction / ploidy)."
     outputFileNamePrefix: "Output prefix to prefix output file names with."
     jobMemory: "Memory (in GB) to allocate to the job."
@@ -1034,7 +1053,7 @@ task getCramMetrics {
 
   runtime {
     memory: "~{jobMemory} GB"
-    modules: "~{modules}"
+    modules: "~{modules} ~{genomeModule}"
     timeout: "~{timeout}"
   }
 

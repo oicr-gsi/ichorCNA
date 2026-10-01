@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scheduler` input (default `sge`). With `slurm`, the final outputs are also copied to `outputDirectory` by the new `copyOutputs` task.
 - Regression test for cram input.
 ### Changed
-- `refFasta` added to the resources map to decode cram input; hg38 uses the Ultima hg38 reference (`hg38-ultima` module).
+- `refFasta` and `genomeModule` added to the resources map to decode cram input.
+- New `hg38_ultima` reference key for Ultima Genomics cram, decoded against the Ultima hg38 reference (`hg38-ultima` module). It shares the hg38 gc/map wigs, centromere file and panel of normals.
 - `inputBam` is now optional; provide either `inputBam` or `inputCram`.
 - bamQC inputs are now workflow inputs (`bamQCmetadata`, `bamQCMetrics_refFasta`, `bamQCMetrics_refSizesBed`, `bamQCMetrics_workflowVersion`).
 

@@ -33,7 +33,7 @@ Parameter|Value|Description
 `minimumMappingQuality`|Int|Mapping quality value below which reads are ignored.
 `chromosomesToAnalyze`|String|Chromosomes in the bam reference file.
 `provisionBam`|Boolean|Boolean, to provision out bam file and coverage metrics
-`reference`|String|The genome reference build. for example: hg19, hg38
+`reference`|String|The genome reference build: hg19, hg38, hg38_noAlt, or hg38_ultima. Use hg38_ultima for Ultima Genomics cram input, which is decoded against the Ultima hg38 reference.
 
 
 #### Optional workflow parameters:
@@ -136,7 +136,7 @@ Parameter|Value|Default|Description
 `bamQC.filter_minQuality`|Int|30|Minimum alignment quality to pass filter
 `runBamToWig.threads`|Int|4|Threads for samtools decoding.
 `runBamToWig.mem`|Int|8|Memory (in GB) to allocate to the job.
-`runBamToWig.modules`|String|"samtools/1.14 python/3.9 hg38-ultima/v0"|Environment module name and version to load (space separated) before command execution.
+`runBamToWig.modules`|String|"samtools/1.14 python/3.9"|Environment module name and version to load (space separated) before command execution.
 `runBamToWig.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
 `runIchorCNA.exonsBed`|String?|None|Bed file containing exon regions. Default: [NULL].
@@ -176,7 +176,7 @@ Parameter|Value|Default|Description
 `getMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `getMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `getCramMetrics.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
-`getCramMetrics.modules`|String|"samtools/1.14 hg38-ultima/v0"|Environment module name and version to load (space separated) before command execution.
+`getCramMetrics.modules`|String|"samtools/1.14"|Environment module name and version to load (space separated) before command execution.
 `getCramMetrics.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `createJson.jobMemory`|Int|8|Memory (in GB) to allocate to the job.
 `createJson.modules`|String|"pandas/1.4.2"|Environment module name and version to load (space separated) before command execution.
