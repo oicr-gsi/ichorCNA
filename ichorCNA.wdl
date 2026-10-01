@@ -546,11 +546,14 @@ PYEOF
     | python3 bam_to_wig.py -w ~{windowSize} -q ~{minimumMappingQuality} -c "~{chromosomesToAnalyze}" --fai ~{refFasta}.fai \
     | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
 
-    # write out chromosomes with data for ichorCNA
-    # (chr prefix already stripped above, exclude Y, sort, wrap in single quotes)
-    grep -E "^fixedStep" ~{outputFileNamePrefix}.wig \
-    | sed -E 's/.*chrom=([^ ]+).*/\1/' \
-    | grep -vw Y | sort -uV | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
+    # write out chromosomes with reads for ichorCNA. The WIG is zero-filled for
+    # every chromosome in the .fai, so keep only those with a non-zero bin, as
+    # runReadCounter does with idxstats (chr prefix already stripped above,
+    # exclude Y, sort, wrap in single quotes)
+    awk '/^fixedStep/ { sub(/.*chrom=/, ""); sub(/ .*/, ""); chrom = $0; next }
+         $1 > 0 { seen[chrom] = 1 }
+         END { for (c in seen) print c }' ~{outputFileNamePrefix}.wig \
+    | grep -vw Y | sort -V | sed -e "s/\(.*\)/'\1'/" > ichorCNAchrs.txt
   >>>
 
   runtime {
@@ -568,7 +571,7 @@ PYEOF
   meta {
     output_meta: {
       wig: "Read count file in WIG format",
-      ichorCNAchrs: "Chromosomes with data for ichorCNA (\"chr\" stripped from the name)"
+      ichorCNAchrs: "Chromosomes with reads for ichorCNA (\"chr\" stripped from the name)"
     }
   }
 }
