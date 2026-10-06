@@ -83,7 +83,7 @@ workflow ichorCNA {
       "mapWig": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/map_hg38_1000kb.wig",
       "normalPanel": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/HD_ULP_PoN_hg38_1Mb_median_normAutosome_median.rds",
       "centromere": "$ICHORCNA_ROOT/lib/R/library/ichorCNA/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt",
-      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-p12/hg38_random.fa",
+      "refFasta": "/.mounts/labs/gsi/modulator/sw/data/hg38-noalt-p12/hg38_noAlt.fa",
       "genomeModule": ""
     }
   }
