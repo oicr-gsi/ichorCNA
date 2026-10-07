@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.0] - 2026-09-30
 ### Added
-- Cram input (`inputCram`), e.g. Ultima Genomics data. The read-count WIG is produced by bam_to_wig.py (ported from Ultimagen's ichorCNA fork) instead of HMMcopy readCounter, with optional read downsampling (`downsampleFraction`). bamQC is skipped for cram input.
+- Cram input (`inputCram`), e.g. Ultima Genomics data. The WIG is produced from per-window mean coverage computed by mosdepth (`runMosdepth`) instead of HMMcopy readCounter. bamQC is skipped for cram input.
 - `getCramMetrics` task collecting lane- and sample-level metrics from a single cram.
 - `scheduler` input (default `sge`). With `slurm`, the final outputs are also copied to `outputDirectory` by the new `copyOutputs` task.
 - Regression test for cram input.

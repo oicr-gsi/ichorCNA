@@ -6,11 +6,13 @@
 
 Workflow for estimating the fraction of tumor in cell-free DNA from sWGS (shallow Whole Genome Sequencing). ichorCNA can be used to inform the presence or absence of tumor-derived DNA and to guide the decision to perform whole exome or deeper whole genome sequencing. Furthermore, the quantitative estimate of tumor fraction can we used to calibrate the desired depth of sequencing to reach statistical power for identifying mutations in cell-free DNA. Finally, ichorCNA can be use to detect large-scale copy number alterations from large cohorts by taking advantage of the cost-effective approach of ultra-low-pass sequencing.
 
-The workflow takes either one or more bam files or a single cram file. Bam input is merged if needed, converted to a read-count WIG with HMMcopy readCounter, and QC'd with the bamQC subworkflow. Cram input (e.g. Ultima Genomics) is streamed through bam_to_wig.py, an index-free drop-in for readCounter ported from Ultimagen's ichorCNA fork, with optional read downsampling for high-depth cfDNA; bamQC is skipped. When scheduler is slurm the final outputs are also copied to outputDirectory.
+The workflow takes either one or more bam files or a single cram file. Bam input is merged if needed, converted to a read-count WIG with HMMcopy readCounter, and QC'd with the bamQC subworkflow. Cram input (e.g. Ultima Genomics) is indexed and converted to a per-window mean coverage WIG with mosdepth; bamQC is skipped. When scheduler is slurm the final outputs are also copied to outputDirectory.
 
 ## Dependencies
 
 * [samtools 1.14](http://www.htslib.org/)
+* [hmmcopy-utils 0.1.1](https://shahlab.ca/projects/hmmcopy_utils/)
+* [mosdepth 0.3.8](https://github.com/brentp/mosdepth)
 * [ichorcna 0.2](https://github.com/broadinstitute/ichorCNA)
 * [python 3.9](python.org)
 * [pandas 1.4.2](https://pandas.pydata.org/)
@@ -40,12 +42,11 @@ Parameter|Value|Description
 Parameter|Value|Default|Description
 ---|---|---|---
 `inputBam`|Array[File]?|None|Array of one or multiple bam files. Provide either inputBam or inputCram (not both). BAM input uses the readCounter wig-generation path.
-`inputCram`|File?|None|Single cram file. Provide either inputBam or inputCram (not both). CRAM input uses the bam_to_wig wig-generation path.
+`inputCram`|File?|None|Single cram file. Provide either inputBam or inputCram (not both). CRAM input uses the mosdepth wig-generation path.
 `bamQCmetadata`|Map[String,String]|{}|Metadata map for bamQC. Required for bam input (bamQC runs); ignored for cram input (bamQC is skipped).
 `bamQCMetrics_refFasta`|String|""|Path to genome FASTA reference for bamQC. Required for bam input; ignored for cram input.
 `bamQCMetrics_refSizesBed`|String|""|Path to genome BED reference with chromosome sizes for bamQC. Required for bam input; ignored for cram input.
 `bamQCMetrics_workflowVersion`|String|""|Workflow version string for bamQC. Required for bam input; ignored for cram input.
-`downsampleFraction`|Float|1.0|Fraction of reads kept by samtools -s before counting (e.g. 0.01 keeps 1%, turning ~100x into ~1x). Default 1.0 = no downsampling.
 `scheduler`|String|"sge"|Batch scheduler the workflow runs under, sge or slurm. With slurm the final outputs are also copied to outputDirectory by the copyOutputs task, for deployments where Cromwell's final_workflow_outputs_dir is not available. With sge nothing is copied and outputs are provisioned by Vidarr as usual.
 `outputDirectory`|String?|None|Absolute path, on a filesystem visible from the compute nodes, to copy the final workflow outputs into. Required when scheduler is slurm; ignored otherwise.
 
@@ -134,10 +135,10 @@ Parameter|Value|Default|Description
 `bamQC.filter_jobMemory`|Int|16|Memory allocated for this job
 `bamQC.filter_modules`|String|"samtools/1.9"|required environment modules
 `bamQC.filter_minQuality`|Int|30|Minimum alignment quality to pass filter
-`runBamToWig.threads`|Int|4|Threads for samtools decoding.
-`runBamToWig.mem`|Int|8|Memory (in GB) to allocate to the job.
-`runBamToWig.modules`|String|"samtools/1.14 python/3.9"|Environment module name and version to load (space separated) before command execution.
-`runBamToWig.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
+`runMosdepth.threads`|Int|8|Number of threads for mosdepth.
+`runMosdepth.mem`|Int|16|Memory (in GB) to allocate to the job.
+`runMosdepth.modules`|String|"mosdepth/0.3.8 samtools/1.14"|Environment module name and version to load (space separated) before command execution.
+`runMosdepth.timeout`|Int|12|Maximum amount of time (in hours) the task can run for.
 `runIchorCNA.normalWig`|File?|None|Normal WIG file. Default: [NULL].
 `runIchorCNA.exonsBed`|String?|None|Bed file containing exon regions. Default: [NULL].
 `runIchorCNA.minMapScore`|Float?|None|Include bins with a minimum mappability score of this value. Default: [0.9].
@@ -213,191 +214,36 @@ This section lists command(s) run by ichorCNA workflow
 ```
     set -euo pipefail
 
-    # bam_to_wig.py — ported from Ultimagen's ichorCNA fork (streaming, index-free
-    # drop-in for HMMcopy readCounter). Source:
-    # https://github.com/Ultimagen/ichorCNA/blob/tammy/streamline-and-downsample-from-s3/scripts/bam_to_wig.py
-    cat > bam_to_wig.py <<'PYEOF'
-#!/usr/bin/env python3
-"""
-Stream SAM/BAM records from stdin and output a fixed-step WIG read-count file.
-Drop-in replacement for HMMcopy readCounter when no BAM index is available
-(e.g. when streaming from S3 via a named pipe or process substitution).
+    mkdir -p mosdepth
 
-Usage:
-    samtools view -T ref.fa file.cram chr1 chr2 ... \
-        | bam_to_wig.py -w 50000 -q 20 -c chr1,chr2,...
+    samtools index ~{cram}
 
-Output:
-    WIG file to stdout (variableStep per chromosome, one value per bin).
-"""
-import sys
-import argparse
-from collections import defaultdict, OrderedDict
+    # per-window mean coverage with mosdepth
+    mosdepth \
+    -t ~{threads} \
+    --fast-mode \
+    -Q ~{minimumMappingQuality} \
+    --by ~{windowSize} \
+    --fasta ~{refFasta} \
+    mosdepth/~{outputFileNamePrefix} \
+    ~{cram}
 
+    # convert the binned coverage to a fixedStep WIG; strip the "chr" prefix from
+    # chrom names so they match the gcWig/mapWig reference WIGs (as the bam path does)
+    zcat mosdepth/~{outputFileNamePrefix}.regions.bed.gz | \
+    awk 'BEGIN { OFS="\t" }
+    $1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X|Y)$/ {
+      chr = $1; start = $2; end = $3; cov = $4;
+      if (NR == 1 || chr != prev_chr || start != prev_end) {
+        print "fixedStep chrom=" chr " start=" (start+1) " step=" (end - start) " span=" (end - start);
+      }
+      print cov;
+      prev_chr = chr; prev_end = end;
+    }' | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
 
-def parse_args():
-    p = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("-w", "--window", type=int, default=1_000_000,
-                   help="Bin size in bp (default: 1000000)")
-    p.add_argument("-q", "--quality", type=int, default=0,
-                   help="Minimum mapping quality (default: 0)")
-    p.add_argument("-c", "--chromosomes", default=None,
-                   help="Comma-separated list of chromosomes to output. "
-                        "Others are still counted but not emitted. "
-                        "If omitted, all chromosomes seen in the SAM header are output.")
-    p.add_argument("--fai", default=None,
-                   help="Path to reference .fai. If given, chrom lengths come "
-                        "from there (preferred — works when samtools is run "
-                        "without -h and emits no @SQ lines).")
-    return p.parse_args()
-
-
-def load_fai(path):
-    lengths = OrderedDict()
-    with open(path) as f:
-        for line in f:
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) >= 2:
-                lengths[parts[0]] = int(parts[1])
-    return lengths
-
-
-def main():
-    args = parse_args()
-    keep_chrs = set(args.chromosomes.split(",")) if args.chromosomes else None
-
-    # chrom → length. Preload from .fai if given (works even when samtools is
-    # invoked without -h, which is the case in the per-chrom streaming path).
-    chr_lengths = load_fai(args.fai) if args.fai else OrderedDict()
-    counts = defaultdict(int)     # (chrom, bin_start) → read count
-
-    # SAM flag bits to skip: unmapped, secondary, QC fail, duplicate, supplementary
-    SKIP_FLAGS = 0x4 | 0x100 | 0x200 | 0x400 | 0x800
-
-    total_read = 0
-    kept = 0
-    current_chr = None
-    import time
-    t0 = time.time()
-
-    for line in sys.stdin:
-        if line.startswith("@"):
-            # Parse @SQ header lines for chromosome lengths
-            if line.startswith("@SQ"):
-                fields = dict(f.split(":", 1) for f in line.split("\t")[1:] if ":" in f)
-                chrom = fields.get("SN", "")
-                length = int(fields.get("LN", 0))
-                if chrom and length:
-                    chr_lengths[chrom] = length
-            continue
-
-        parts = line.split("\t", 12)
-        if len(parts) < 5:
-            continue
-
-        flag = int(parts[1])
-        if flag & SKIP_FLAGS:
-            continue
-
-        mapq = int(parts[4])
-        if mapq < args.quality:
-            continue
-
-        chrom = parts[2]
-        if chrom == "*":
-            continue
-        if keep_chrs and chrom not in keep_chrs:
-            continue
-
-        # New chromosome → print a completion line then announce the new one
-        if chrom != current_chr:
-            if current_chr is not None:
-                elapsed = time.time() - t0
-                sys.stderr.write(
-                    f"\r  [{elapsed:6.0f}s] finished {current_chr:<6} | "
-                    f"{total_read/1e6:6.1f}M reads total | "
-                    f"{kept/1e6:5.1f}M kept | "
-                    f"{total_read/elapsed/1e6:.2f}M reads/s\n"
-                )
-                sys.stderr.flush()
-            current_chr = chrom
-            sys.stderr.write(f"  [      ] starting {current_chr} ...\r")
-            sys.stderr.flush()
-
-        total_read += 1
-
-        # Rolling update every 1M reads within a chromosome
-        if total_read % 1_000_000 == 0:
-            elapsed = time.time() - t0
-            sys.stderr.write(
-                f"\r  [{elapsed:6.0f}s] {current_chr:<6} "
-                f"{total_read/1e6:6.1f}M reads | "
-                f"{kept/1e6:5.1f}M kept | "
-                f"{total_read/elapsed/1e6:.2f}M reads/s   "
-            )
-            sys.stderr.flush()
-
-        pos = int(parts[3])  # 1-based leftmost position
-        bin_start = ((pos - 1) // args.window) * args.window + 1
-        counts[(chrom, bin_start)] += 1
-        kept += 1
-
-    # ── Emit WIG ──────────────────────────────────────────────────────────────
-    elapsed = time.time() - t0
-    sys.stderr.write(
-        f"\n  Done: {total_read/1e6:.1f}M reads in {elapsed:.0f}s "
-        f"({total_read/elapsed/1e6:.2f}M reads/s) | {kept} bins populated\n"
-    )
-    # Emit fixedStep WIG to match the format of the bundled GC/map reference
-    # WIGs that ichorCNA expects (HMMcopy::wigsToRangedData). One value per
-    # bin from start=1 to chrom_length, zero-filled where no reads landed.
-    emit_chrs = [c for c in chr_lengths if keep_chrs is None or c in keep_chrs]
-    seen = set(emit_chrs)
-    # Append any chrom seen in reads but missing from chr_lengths (rare — only
-    # when no .fai was given). Use a set to avoid duplicates.
-    seen_in_counts = set()
-    for chrom, _ in counts:
-        if chrom not in seen and chrom not in seen_in_counts:
-            seen_in_counts.add(chrom)
-            emit_chrs.append(chrom)
-
-    for chrom in emit_chrs:
-        length = chr_lengths.get(chrom, 0)
-        if length <= 0:
-            # No length info → fall back to max observed bin
-            chrom_bins = [b for (c, b) in counts if c == chrom]
-            if not chrom_bins:
-                continue
-            length = max(chrom_bins) + args.window
-        sys.stdout.write(
-            f"fixedStep chrom={chrom} start=1 step={args.window} span={args.window}\n"
-        )
-        n_bins = (length + args.window - 1) // args.window
-        for i in range(n_bins):
-            bin_start = i * args.window + 1
-            sys.stdout.write(f"{counts.get((chrom, bin_start), 0)}\n")
-
-
-if __name__ == "__main__":
-    main()
-PYEOF
-
-    # downsample reads if requested (samtools -s FRAC); skip when fraction >= 1.0
-    SUBSAMPLE_FLAG=""
-    if awk "BEGIN{exit !(~{downsampleFraction} < 1.0)}"; then
-      SUBSAMPLE_FLAG="-s ~{downsampleFraction}"
-    fi
-
-    # stream the cram through bam_to_wig.py; strip the "chr" prefix from chrom
-    # names so the WIG matches the gcWig/mapWig reference WIGs ichorCNA expects
-    samtools view -@ ~{threads} ${SUBSAMPLE_FLAG} -T ~{refFasta} ~{cram} \
-    | python3 bam_to_wig.py -w ~{windowSize} -q ~{minimumMappingQuality} -c "~{chromosomesToAnalyze}" --fai ~{refFasta}.fai \
-    | sed "s/chrom=chr/chrom=/" > ~{outputFileNamePrefix}.wig
-
-    # write out chromosomes with reads for ichorCNA. The WIG is zero-filled for
-    # every chromosome in the .fai, so keep only those with a non-zero bin, as
-    # runReadCounter does with idxstats (chr prefix already stripped above,
+    # write out chromosomes with reads for ichorCNA. mosdepth reports every
+    # window of every contig, so keep only chromosomes with a non-zero window,
+    # as runReadCounter does with idxstats (chr prefix already stripped above,
     # exclude Y, sort, wrap in single quotes)
     awk '/^fixedStep/ { sub(/.*chrom=/, ""); sub(/ .*/, ""); chrom = $0; next }
          $1 > 0 { seen[chrom] = 1 }

@@ -39,7 +39,7 @@ digraph ichorCNA {
   }
   subgraph cluster_4 {
     label="if (defined(inputCram))"; fillcolor="#f6f6f6" color="#999999" style="filled,rounded,dashed";
-    runBamToWig [label="runBamToWig"]
+    runMosdepth [label="runMosdepth"]
     getCramMetrics [label="getCramMetrics"]
   }
   subgraph cluster_5 {
@@ -66,15 +66,15 @@ digraph ichorCNA {
   bamMerge -> getMetrics
   runIchorCNA -> getMetrics
   bamMerge -> indexBam
-  runBamToWig -> runIchorCNA
+  runMosdepth -> runIchorCNA
   runReadCounter -> runIchorCNA
   bamMerge -> runReadCounter
   INPUTS -> bamMerge [style=dashed color="#bbbbbb"]
   INPUTS -> bamQC [style=dashed color="#bbbbbb"]
   INPUTS -> indexBam [style=dashed color="#bbbbbb"]
   INPUTS -> preMergeBamMetricsBam [style=dashed color="#bbbbbb"]
-  INPUTS -> runBamToWig [style=dashed color="#bbbbbb"]
   INPUTS -> runIchorCNA [style=dashed color="#bbbbbb"]
+  INPUTS -> runMosdepth [style=dashed color="#bbbbbb"]
   INPUTS -> runReadCounter [style=dashed color="#bbbbbb"]
   copyOutputs -> OUTPUTS [style=dashed color="#bbbbbb"]
 
