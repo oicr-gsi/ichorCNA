@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-09-30
+### Added
+- Cram input (`inputCram`), e.g. Ultima Genomics data. The read-count WIG is produced by bam_to_wig.py (ported from Ultimagen's ichorCNA fork) instead of HMMcopy readCounter, with optional read downsampling (`downsampleFraction`). bamQC is skipped for cram input.
+- `getCramMetrics` task collecting lane- and sample-level metrics from a single cram.
+- `scheduler` input (default `sge`). With `slurm`, the final outputs are also copied to `outputDirectory` by the new `copyOutputs` task.
+- Regression test for cram input.
+### Changed
+- `refFasta` and `genomeModule` added to the resources map to decode cram input.
+- New `hg38_ultima` reference key for Ultima Genomics cram, decoded against the Ultima hg38 reference (`hg38-ultima` module). It shares the hg38 gc/map wigs, centromere file and panel of normals.
+- `inputBam` is now optional; provide either `inputBam` or `inputCram`.
+- bamQC inputs are now workflow inputs (`bamQCmetadata`, `bamQCMetrics_refFasta`, `bamQCMetrics_refSizesBed`, `bamQCMetrics_workflowVersion`).
+
 ## [1.5.3] - 2026-09-24
 ### Changed
 - Fixed genomeBuild being passed to runIchorCNA task 
