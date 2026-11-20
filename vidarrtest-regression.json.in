@@ -296,7 +296,7 @@
             {
                 "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
                 "metrics_compare": "@CHECKOUT@/tests/compare.sh",
-                "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.5.0/single_BamInput.metrics",
+                "output_metrics": "/.mounts/labs/gsi/testdata/ichorCNA/output_metrics/1.6.0/single_BamInput.metrics",
                 "type": "script"
             }
         ]
