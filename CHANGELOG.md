@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `hg38_ultima` reference key for Ultima Genomics cram, decoded against the Ultima hg38 reference (`hg38-ultima` module). It shares the hg38 gc/map wigs, centromere file and panel of normals.
 - `inputBam` is now optional; provide either `inputBam` or `inputCram`.
 - bamQC inputs are now workflow inputs (`bamQCmetadata`, `bamQCMetrics_refFasta`, `bamQCMetrics_refSizesBed`, `bamQCMetrics_workflowVersion`).
+- Regression tests no longer compare the params.txt md5, which varied between runs of the cram test.
 
 ## [1.5.3] - 2026-09-24
 ### Changed
